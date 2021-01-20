@@ -4021,3 +4021,12 @@ uint16_t WS2812FX::mode_aurora(void) {
   
   return FRAMETIME;
 }
+
+// include any UserFX code directly into the .cpp file
+#ifdef USERFX1_CPP_H
+#include USERFX1_CPP_H
+#endif
+
+#ifdef USERFX2_CPP_H
+#include USERFX2_CPP_H
+#endif

@@ -24,6 +24,9 @@
   Modified for WLED
 */
 
+// wled.h contains my_config.h, and needs to be included at top of FX.h, before #ifndef WS2812FX_h check (as wled.h includes FX.h), so that the contents of FX.h is included into wled.h
+#include "wled.h"
+
 #ifndef WS2812FX_h
 #define WS2812FX_h
 
@@ -33,7 +36,42 @@
   #include "NpbWrapper.h"
 #endif
 
-#include "const.h"
+// UserFX: to add user-defined effects to WLED
+#ifdef USERFX1_H
+    #include USERFX1_H
+#else
+    #define USERFX1_MODE_COUNT 0
+    #define USERFX1_ADD_MODES_TO_MAP()
+    #define USERFX1_MODES_LIST()
+    #define USERFX1_JSON_MODE_NAMES
+#endif
+
+#ifdef USERFX2_H
+    #include USERFX2_H
+#else
+    #define USERFX2_MODE_COUNT 0
+    #define USERFX2_ADD_MODES_TO_MAP()
+    #define USERFX2_MODES_LIST()
+    #define USERFX2_JSON_MODE_NAMES
+#endif
+
+#define USERFX_MODE_COUNT (\
+  USERFX1_MODE_COUNT + \
+  USERFX2_MODE_COUNT + \
+  0)
+
+#define USERFX_ADD_MODES_TO_MAP() \
+    USERFX1_ADD_MODES_TO_MAP() \
+    USERFX2_ADD_MODES_TO_MAP() \
+
+#define USERFX_MODES_LIST() \
+    USERFX1_MODES_LIST() \
+    USERFX2_MODES_LIST() \
+
+#define json_mode_names_user \
+    USERFX1_JSON_MODE_NAMES \
+    USERFX2_JSON_MODE_NAMES \
+
 
 #define FASTLED_INTERNAL //remove annoying pragma messages
 #define USE_GET_MILLISECOND_TIMER
@@ -118,7 +156,7 @@
 #define IS_REVERSE      ((SEGMENT.options & REVERSE     ) == REVERSE     )
 #define IS_SELECTED     ((SEGMENT.options & SELECTED    ) == SELECTED    )
 
-#define MODE_COUNT  118
+#define BUILTIN_MODE_COUNT             118
 
 #define FX_MODE_STATIC                   0
 #define FX_MODE_BLINK                    1
@@ -239,6 +277,8 @@
 #define FX_MODE_TV_SIMULATOR           116
 #define FX_MODE_DYNAMIC_SMOOTH         117
 
+
+#define MODE_COUNT (BUILTIN_MODE_COUNT + USERFX_MODE_COUNT)
 
 class WS2812FX {
   typedef uint16_t (WS2812FX::*mode_ptr)(void);
@@ -577,6 +617,7 @@ class WS2812FX {
       _mode[FX_MODE_BLENDS]                  = &WS2812FX::mode_blends;
       _mode[FX_MODE_TV_SIMULATOR]            = &WS2812FX::mode_tv_simulator;
       _mode[FX_MODE_DYNAMIC_SMOOTH]          = &WS2812FX::mode_dynamic_smooth;
+      USERFX_ADD_MODES_TO_MAP();
 
       _brightness = DEFAULT_BRIGHTNESS;
       currentPalette = CRGBPalette16(CRGB::Black);
@@ -791,7 +832,8 @@ class WS2812FX {
       mode_candy_cane(void),
       mode_blends(void),
       mode_tv_simulator(void),
-      mode_dynamic_smooth(void);
+      mode_dynamic_smooth(void)
+      USERFX_MODES_LIST();
 
   private:
     NeoPixelWrapper *bus;
@@ -878,22 +920,14 @@ class WS2812FX {
       transitionProgress(uint8_t tNr);
 };
 
-//10 names per line
-const char JSON_mode_names[] PROGMEM = R"=====([
-"Solid","Blink","Breathe","Wipe","Wipe Random","Random Colors","Sweep","Dynamic","Colorloop","Rainbow",
-"Scan","Scan Dual","Fade","Theater","Theater Rainbow","Running","Saw","Twinkle","Dissolve","Dissolve Rnd",
-"Sparkle","Sparkle Dark","Sparkle+","Strobe","Strobe Rainbow","Strobe Mega","Blink Rainbow","Android","Chase","Chase Random",
-"Chase Rainbow","Chase Flash","Chase Flash Rnd","Rainbow Runner","Colorful","Traffic Light","Sweep Random","Running 2","Aurora","Stream",
-"Scanner","Lighthouse","Fireworks","Rain","Merry Christmas","Fire Flicker","Gradient","Loading","Police","Police All",
-"Two Dots","Two Areas","Circus","Halloween","Tri Chase","Tri Wipe","Tri Fade","Lightning","ICU","Multi Comet",
-"Scanner Dual","Stream 2","Oscillate","Pride 2015","Juggle","Palette","Fire 2012","Colorwaves","Bpm","Fill Noise",
-"Noise 1","Noise 2","Noise 3","Noise 4","Colortwinkles","Lake","Meteor","Meteor Smooth","Railway","Ripple",
-"Twinklefox","Twinklecat","Halloween Eyes","Solid Pattern","Solid Pattern Tri","Spots","Spots Fade","Glitter","Candle","Fireworks Starburst",
-"Fireworks 1D","Bouncing Balls","Sinelon","Sinelon Dual","Sinelon Rainbow","Popcorn","Drip","Plasma","Percent","Ripple Rainbow",
-"Heartbeat","Pacifica","Candle Multi", "Solid Glitter","Sunrise","Phased","Twinkleup","Noise Pal", "Sine","Phased Noise",
-"Flow","Chunchun","Dancing Shadows","Washing Machine","Candy Cane","Blends","TV Simulator","Dynamic Smooth"
-])=====";
+// Ideally this would be 10 names per line, but a compiler bug seems to be preventing using a raw string literal containing newlines with a preprocessor macro https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55971
+#define json_mode_names_builtin_beginning R"=====(["Solid","Blink","Breathe","Wipe","Wipe Random","Random Colors","Sweep","Dynamic","Colorloop","Rainbow","Scan","Scan Dual","Fade","Theater","Theater Rainbow","Running","Saw","Twinkle","Dissolve","Dissolve Rnd","Sparkle","Sparkle Dark","Sparkle+","Strobe","Strobe Rainbow","Strobe Mega","Blink Rainbow","Android","Chase","Chase Random","Chase Rainbow","Chase Flash","Chase Flash Rnd","Rainbow Runner","Colorful","Traffic Light","Sweep Random","Running 2","Aurora","Stream","Scanner","Lighthouse","Fireworks","Rain","Merry Christmas","Fire Flicker","Gradient","Loading","Police","Police All","Two Dots","Two Areas","Circus","Halloween","Tri Chase","Tri Wipe","Tri Fade","Lightning","ICU","Multi Comet","Scanner Dual","Stream 2","Oscillate","Pride 2015","Juggle","Palette","Fire 2012","Colorwaves","Bpm","Fill Noise","Noise 1","Noise 2","Noise 3","Noise 4","Colortwinkles","Lake","Meteor","Meteor Smooth","Railway","Ripple","Twinklefox","Twinklecat","Halloween Eyes","Solid Pattern","Solid Pattern Tri","Spots","Spots Fade","Glitter","Candle","Fireworks Starburst","Fireworks 1D","Bouncing Balls","Sinelon","Sinelon Dual","Sinelon Rainbow","Popcorn","Drip","Plasma","Percent","Ripple Rainbow","Heartbeat","Pacifica","Candle Multi","Solid Glitter","Sunrise","Phased","Phased Noise","TwinkleUp","Noise Pal","Sine","Flow","Chunchun","Dancing Shadows","Washing Machine","Candy Cane","Blends","TV Simulator","Dynamic Smooth")====="
 
+#define json_mode_names_builtin_end R"=====(])====="
+
+#define concat(first, second) first second
+
+const char JSON_mode_names[] PROGMEM = concat(concat(json_mode_names_builtin_beginning, json_mode_names_user), json_mode_names_builtin_end);
 
 const char JSON_palette_names[] PROGMEM = R"=====([
 "Default","* Random Cycle","* Color 1","* Colors 1&2","* Color Gradient","* Colors Only","Party","Cloud","Lava","Ocean",
