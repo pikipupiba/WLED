@@ -4,9 +4,11 @@
 
 #include <stdint.h>
 
+// _segmentmaps is temporary, and in the future should be pulling 2D values from _segments[], once 2D functionality is integrated into WLED
 segmentmap _segmentmaps[MAX_NUM_SEGMENTS] = {
-  // matrixWidth, matrixHeight, ledsOffset
-  { 32, 32, 0 }
+  // matrixWidth, matrixHeight, ledsOffset (set to the sum of previous segments' matrixWidth*matrixHeight values)
+  { 16, 16, 0 },
+  { 32, 32, 16*16 }
 };
 
 uint16_t kMatrixWidth;
