@@ -16,4 +16,5 @@ typedef struct Segmentmap {
   uint16_t matrixWidth;
   uint16_t matrixHeight;
   int ledsOffset;
+  const uint16_t * mapPtr;
 } segmentmap;
