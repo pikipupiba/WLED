@@ -12,9 +12,14 @@
 #define USERFX1_MODES_LIST()                                  \
     ,writeLedsArrayToWled_XY(CRGB * leds)                     \
 
+typedef struct xyPair {
+  uint16_t x;
+  uint16_t y;
+} xyPair;
+
 typedef struct Segmentmap {
   uint16_t matrixWidth;
   uint16_t matrixHeight;
   int ledsOffset;
-  const uint16_t * mapPtr;
+  const xyPair * xyTablePointer;
 } segmentmap;
