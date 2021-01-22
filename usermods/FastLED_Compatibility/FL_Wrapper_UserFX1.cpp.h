@@ -33,7 +33,7 @@ CRGB ledsCompat[MAX_LEDS];
 // This function can be used in an effect, and can be used by FastLED's blur2d function
 uint16_t XY( uint8_t x, uint8_t y) { return (y * kMatrixWidth) + x; }
 
-// this function takes the progressive matrix stored in leds[], applies mapping, and writes it to WLEDs buffers
+// this function takes the progressive matrix stored in leds[], applies mapping, and writes it to WLED's buffers
 uint16_t WS2812FX::writeLedsArrayToWled_XY(CRGB * leds) {
   const xyPair * xytable = _segmentmaps[_segment_index].xyTablePointer;
 
@@ -45,11 +45,28 @@ uint16_t WS2812FX::writeLedsArrayToWled_XY(CRGB * leds) {
   return 0;
 }
 
+// this function takes the contents of leds[], and writes it to WLED's buffers
+uint16_t WS2812FX::writeLedsArrayToWled(CRGB * leds) {
+  for (int i=0; i<SEGLEN; i++) {
+     setPixelColor(i, leds[i].red, leds[i].green, leds[i].blue);
+  }
+
+  // to fit within UserFX constraints, this WS2812FX method must return uint16_t (would be void otherwise)
+  return 0;
+}
+
 #define BEGIN_FASTLED_XY_COMPATIBILITY()                                      \
           CRGB * leds = &ledsCompat[_segmentmaps[_segment_index].ledsOffset]; \
-          int NUM_LEDS (kMatrixWidth*kMatrixHeight);                          \
+          int NUM_LEDS = (kMatrixWidth*kMatrixHeight);                          \
           setKMatrixWidth(_segmentmaps[_segment_index].matrixWidth);          \
           setKMatrixHeight(_segmentmaps[_segment_index].matrixHeight);
 
 #define END_FASTLED_XY_COMPATIBILITY() \
           writeLedsArrayToWled_XY(leds);
+
+#define BEGIN_FASTLED_COMPATIBILITY()                                      \
+          CRGB * leds = &ledsCompat[_segmentmaps[_segment_index].ledsOffset]; \
+          const int NUM_LEDS = SEGLEN;                                              
+
+#define END_FASTLED_COMPATIBILITY() \
+          writeLedsArrayToWled(leds);

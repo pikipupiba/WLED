@@ -11,6 +11,7 @@
 // on each line: prepend comma before mode, add mode function declaration, followed by a slash
 #define USERFX1_MODES_LIST()                                  \
     ,writeLedsArrayToWled_XY(CRGB * leds)                     \
+    ,writeLedsArrayToWled(CRGB * leds)                     \
 
 typedef struct xyPair {
   uint16_t x;

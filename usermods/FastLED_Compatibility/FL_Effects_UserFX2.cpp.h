@@ -38,3 +38,19 @@ uint16_t WS2812FX::mode_2DSwirl(void) {
 
   return FRAMETIME;
 }
+
+uint16_t WS2812FX::mode_ScrollingWash(void) {
+  BEGIN_FASTLED_COMPATIBILITY();
+
+  const xyPair * xytable = _segmentmaps[_segment_index].xyTablePointer;
+
+  for (int i=0; i<NUM_LEDS; i++) {
+    uint16_t x = xytable[i].x;
+    uint16_t y = xytable[i].y;
+    leds[i] = CHSV( x + (millis() / 10), 255, 255);
+  }
+
+  END_FASTLED_COMPATIBILITY();
+
+  return FRAMETIME;
+}
