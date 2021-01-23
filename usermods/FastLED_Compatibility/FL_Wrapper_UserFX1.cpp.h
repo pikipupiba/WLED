@@ -31,9 +31,6 @@ void setKMatrixHeight(uint16_t height) {
   kMatrixHeight = height;
 }
 
-// this array may need to be larger than MAX_LEDS if XY mapping is used to drive less than (matrixWidth*matrixHeight) number of pixels in a segment
-CRGB ledsCompat[MAX_LEDS];
-
 // XY is always set to progressive mode (all rows have incrementing index from left to right), mapping is done later
 // This function can be used in an effect, and can be used by FastLED's blur2d function
 uint16_t XY( uint8_t x, uint8_t y) { return (y * kMatrixWidth) + x; }
@@ -60,18 +57,21 @@ uint16_t WS2812FX::writeLedsArrayToWled(CRGB * leds) {
   return 0;
 }
 
-#define BEGIN_FASTLED_XY_COMPATIBILITY()                                      \
-          CRGB * leds = &ledsCompat[_segmentmaps[_segment_index].ledsOffset]; \
-          int NUM_LEDS = (kMatrixWidth*kMatrixHeight);                          \
-          setKMatrixWidth(_segmentmaps[_segment_index].matrixWidth);          \
-          setKMatrixHeight(_segmentmaps[_segment_index].matrixHeight);
+#define BEGIN_FASTLED_XY_COMPATIBILITY()                                          \
+          setKMatrixWidth(_segmentmaps[_segment_index].matrixWidth);              \
+          setKMatrixHeight(_segmentmaps[_segment_index].matrixHeight);            \
+          int NUM_LEDS = (kMatrixWidth*kMatrixHeight);                            \
+          if(!SEGENV.allocateData(sizeof(CRGB) * NUM_LEDS)) return mode_static(); \
+          CRGB * leds = reinterpret_cast<CRGB*>(SEGENV.data);                     \
 
-#define END_FASTLED_XY_COMPATIBILITY() \
-          writeLedsArrayToWled_XY(leds);
+#define END_FASTLED_XY_COMPATIBILITY()    \
+          writeLedsArrayToWled_XY(leds);  \
 
-#define BEGIN_FASTLED_COMPATIBILITY()                                      \
-          CRGB * leds = &ledsCompat[_segmentmaps[_segment_index].ledsOffset]; \
-          const int NUM_LEDS = SEGLEN;                                              
+#define BEGIN_FASTLED_COMPATIBILITY()                                             \
+          const int NUM_LEDS = SEGLEN;                                            \
+          if(!SEGENV.allocateData(sizeof(CRGB) * NUM_LEDS)) return mode_static(); \
+          CRGB * leds = reinterpret_cast<CRGB*>(SEGENV.data);                     \
 
-#define END_FASTLED_COMPATIBILITY() \
-          writeLedsArrayToWled(leds);
+#define END_FASTLED_COMPATIBILITY()       \
+          writeLedsArrayToWled(leds);     \
+
