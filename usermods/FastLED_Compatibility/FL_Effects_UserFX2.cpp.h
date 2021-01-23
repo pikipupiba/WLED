@@ -54,3 +54,53 @@ uint16_t WS2812FX::mode_ScrollingWash(void) {
 
   return FRAMETIME;
 }
+
+
+// Fire2012 by Mark Kriegsman. Converted to WLED by Andrew Tuline. 
+// original https://github.com/FastLED/FastLED/blob/master/examples/Fire2012/Fire2012.ino
+uint16_t WS2812FX::mode_2Dfire2012(void) {
+  FL_ALLOC_WITH_1_ARRAY_XY(
+    unsigned long prevMillis;
+    , byte, heat, NUM_LEDS
+    );
+
+  const uint8_t COOLING = 50;
+  const uint8_t SPARKING = 50;
+
+  CRGBPalette16 currentPalette  = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Orange, CRGB::Yellow);
+  unsigned long curMillis = millis();
+
+  if ((curMillis - FL_STATICVAR(prevMillis)) >= ((256-SEGMENT.speed) >>2)) {
+    FL_STATICVAR(prevMillis) = curMillis;
+
+    for (int mw = 0; mw < kMatrixWidth; mw++) {            // Move along the width of the flame
+
+      // Step 1.  Cool down every cell a little
+      for (int mh = 0; mh < kMatrixHeight; mh++) {
+        heat[mw*kMatrixWidth+mh] = qsub8( heat[mw*kMatrixWidth+mh],  random16(0, ((COOLING * 10) / kMatrixHeight) + 2));
+      }
+
+      // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+      for (int mh = kMatrixHeight - 1; mh >= 2; mh--) {
+        heat[mw*kMatrixWidth+mh] = (heat[mw*kMatrixWidth+mh - 1] + heat[mw*kMatrixWidth+mh - 2] + heat[mw*kMatrixWidth+mh - 2] ) / 3;
+      }
+
+      // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
+      if (random8(0,255) < SPARKING ) {
+        int mh = random8(3);
+        heat[mw*kMatrixWidth+mh] = qadd8( heat[mw*kMatrixWidth+mh], random8(160,255) );
+      }
+
+      // Step 4.  Map from heat cells to LED colors
+      for (int mh = 0; mh < kMatrixHeight; mh++) {
+        byte colorindex = scale8( heat[mw*kMatrixWidth+mh], 240);
+        leds[XY(mw,mh)] = ColorFromPalette(currentPalette, colorindex, 255);
+      } // for mh
+    } // for mw
+  } // if millis
+  // TODO: we might not need to update leds every time based on millis check?
+
+  END_FASTLED_XY_COMPATIBILITY();
+
+  return FRAMETIME;
+}
