@@ -14,10 +14,10 @@ const xyPair xyTableDotstarDisk[] = {{16,8},{16,9},{16,10},{15,11},{15,12},{14,1
 
 // _segmentmaps is temporary, and in the future should be pulling 2D values from _segments[], once 2D functionality is integrated into WLED
 segmentmap _segmentmaps[MAX_NUM_SEGMENTS] = {
-  // matrixWidth, matrixHeight, ledsOffset (set to the sum of previous segments' matrixWidth*matrixHeight values), mapPtr
-  { 16, 16, 0 , xyTable16x16Serpentine},
-  { 17, 17, 16*16 , xyTableDotstarDisk},
-  { 16, 16, (16*16 + 17*17), xyTable16x16Progressive}
+  // matrixWidth, matrixHeight, mapPtr, mapsize
+  { 16, 16, xyTable16x16Serpentine, sizeof(xyTable16x16Serpentine)/sizeof(xyPair)},
+  { 17, 17, xyTableDotstarDisk, sizeof(xyTableDotstarDisk)/sizeof(xyPair)},
+  { 16, 16, xyTable16x16Progressive, sizeof(xyTable16x16Progressive)/sizeof(xyPair)}
 };
 
 uint16_t kMatrixWidth;
@@ -38,6 +38,8 @@ uint16_t XY( uint8_t x, uint8_t y) { return (y * kMatrixWidth) + x; }
 // this function takes the progressive matrix stored in leds[], applies mapping, and writes it to WLED's buffers
 uint16_t WS2812FX::writeLedsArrayToWled_XY(CRGB * leds) {
   const xyPair * xytable = _segmentmaps[_segment_index].xyTablePointer;
+
+  // TODO: bounds check xytable using _segmentmaps[_segment_index].xyTableNumEntries, it's possible to set SEGLEN larger than table
 
   for (int i=0; i<SEGLEN; i++) {
      setPixelColor(i, leds[XY(xytable[i].x, xytable[i].y)].red, leds[XY(xytable[i].x, xytable[i].y)].green, leds[XY(xytable[i].x, xytable[i].y)].blue);
