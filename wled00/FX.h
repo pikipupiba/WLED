@@ -712,127 +712,126 @@ class WS2812FX {
       getSegments(void);
 
     // builtin modes
-    uint16_t
-      mode_static(void),
-      mode_blink(void),
-      mode_blink_rainbow(void),
-      mode_strobe(void),
-      mode_strobe_rainbow(void),
-      mode_color_wipe(void),
-      mode_color_sweep(void),
-      mode_color_wipe_random(void),
-      mode_color_sweep_random(void),
-      mode_random_color(void),
-      mode_dynamic(void),
-      mode_breath(void),
-      mode_fade(void),
-      mode_scan(void),
-      mode_dual_scan(void),
-      mode_theater_chase(void),
-      mode_theater_chase_rainbow(void),
-      mode_rainbow(void),
-      mode_rainbow_cycle(void),
-      mode_running_lights(void),
-      mode_saw(void),
-      mode_twinkle(void),
-      mode_dissolve(void),
-      mode_dissolve_random(void),
-      mode_sparkle(void),
-      mode_flash_sparkle(void),
-      mode_hyper_sparkle(void),
-      mode_multi_strobe(void),
-      mode_android(void),
-      mode_chase_color(void),
-      mode_chase_random(void),
-      mode_chase_rainbow(void),
-      mode_chase_flash(void),
-      mode_chase_flash_random(void),
-      mode_chase_rainbow_white(void),
-      mode_colorful(void),
-      mode_traffic_light(void),
-      mode_running_color(void),
-      mode_aurora(void),
-      mode_running_random(void),
-      mode_larson_scanner(void),
-      mode_comet(void),
-      mode_fireworks(void),
-      mode_rain(void),
-      mode_merry_christmas(void),
-      mode_halloween(void),
-      mode_fire_flicker(void),
-      mode_gradient(void),
-      mode_loading(void),
-      mode_police(void),
-      mode_police_all(void),
-      mode_two_dots(void),
-      mode_two_areas(void),
-      mode_circus_combustus(void),
-      mode_bicolor_chase(void),
-      mode_tricolor_chase(void),
-      mode_tricolor_wipe(void),
-      mode_tricolor_fade(void),
-      mode_lightning(void),
-      mode_icu(void),
-      mode_multi_comet(void),
-      mode_dual_larson_scanner(void),
-      mode_random_chase(void),
-      mode_oscillate(void),
-      mode_fire_2012(void),
-      mode_pride_2015(void),
-      mode_bpm(void),
-      mode_juggle(void),
-      mode_palette(void),
-      mode_colorwaves(void),
-      mode_fillnoise8(void),
-      mode_noise16_1(void),
-      mode_noise16_2(void),
-      mode_noise16_3(void),
-      mode_noise16_4(void),
-      mode_colortwinkle(void),
-      mode_lake(void),
-      mode_meteor(void),
-      mode_meteor_smooth(void),
-      mode_railway(void),
-      mode_ripple(void),
-      mode_twinklefox(void),
-      mode_twinklecat(void),
-      mode_halloween_eyes(void),
-      mode_static_pattern(void),
-      mode_tri_static_pattern(void),
-      mode_spots(void),
-      mode_spots_fade(void),
-      mode_glitter(void),
-      mode_candle(void),
-      mode_starburst(void),
-      mode_exploding_fireworks(void),
-      mode_bouncing_balls(void),
-      mode_sinelon(void),
-      mode_sinelon_dual(void),
-      mode_sinelon_rainbow(void),
-      mode_popcorn(void),
-      mode_drip(void),
-      mode_plasma(void),
-      mode_percent(void),
-      mode_ripple_rainbow(void),
-      mode_heartbeat(void),
-      mode_pacifica(void),
-      mode_candle_multi(void),
-      mode_solid_glitter(void),
-      mode_sunrise(void),
-      mode_phased(void),
-      mode_twinkleup(void),
-      mode_noisepal(void),
-      mode_sinewave(void),
-      mode_phased_noise(void),
-      mode_flow(void),
-      mode_chunchun(void),
-      mode_dancing_shadows(void),
-      mode_washing_machine(void),
-      mode_candy_cane(void),
-      mode_blends(void),
-      mode_tv_simulator(void),
-      mode_dynamic_smooth(void)
-      USERFX_MODES_LIST();
+    uint16_t mode_static(void);
+    uint16_t mode_blink(void);
+    uint16_t mode_blink_rainbow(void);
+    uint16_t mode_strobe(void);
+    uint16_t mode_strobe_rainbow(void);
+    uint16_t mode_color_wipe(void);
+    uint16_t mode_color_sweep(void);
+    uint16_t mode_color_wipe_random(void);
+    uint16_t mode_color_sweep_random(void);
+    uint16_t mode_random_color(void);
+    uint16_t mode_dynamic(void);
+    uint16_t mode_breath(void);
+    uint16_t mode_fade(void);
+    uint16_t mode_scan(void);
+    uint16_t mode_dual_scan(void);
+    uint16_t mode_theater_chase(void);
+    uint16_t mode_theater_chase_rainbow(void);
+    uint16_t mode_rainbow(void);
+    uint16_t mode_rainbow_cycle(void);
+    uint16_t mode_running_lights(void);
+    uint16_t mode_saw(void);
+    uint16_t mode_twinkle(void);
+    uint16_t mode_dissolve(void);
+    uint16_t mode_dissolve_random(void);
+    uint16_t mode_sparkle(void);
+    uint16_t mode_flash_sparkle(void);
+    uint16_t mode_hyper_sparkle(void);
+    uint16_t mode_multi_strobe(void);
+    uint16_t mode_android(void);
+    uint16_t mode_chase_color(void);
+    uint16_t mode_chase_random(void);
+    uint16_t mode_chase_rainbow(void);
+    uint16_t mode_chase_flash(void);
+    uint16_t mode_chase_flash_random(void);
+    uint16_t mode_chase_rainbow_white(void);
+    uint16_t mode_colorful(void);
+    uint16_t mode_traffic_light(void);
+    uint16_t mode_running_color(void);
+    uint16_t mode_aurora(void);
+    uint16_t mode_running_random(void);
+    uint16_t mode_larson_scanner(void);
+    uint16_t mode_comet(void);
+    uint16_t mode_fireworks(void);
+    uint16_t mode_rain(void);
+    uint16_t mode_merry_christmas(void);
+    uint16_t mode_halloween(void);
+    uint16_t mode_fire_flicker(void);
+    uint16_t mode_gradient(void);
+    uint16_t mode_loading(void);
+    uint16_t mode_police(void);
+    uint16_t mode_police_all(void);
+    uint16_t mode_two_dots(void);
+    uint16_t mode_two_areas(void);
+    uint16_t mode_circus_combustus(void);
+    uint16_t mode_bicolor_chase(void);
+    uint16_t mode_tricolor_chase(void);
+    uint16_t mode_tricolor_wipe(void);
+    uint16_t mode_tricolor_fade(void);
+    uint16_t mode_lightning(void);
+    uint16_t mode_icu(void);
+    uint16_t mode_multi_comet(void);
+    uint16_t mode_dual_larson_scanner(void);
+    uint16_t mode_random_chase(void);
+    uint16_t mode_oscillate(void);
+    uint16_t mode_fire_2012(void);
+    uint16_t mode_pride_2015(void);
+    uint16_t mode_bpm(void);
+    uint16_t mode_juggle(void);
+    uint16_t mode_palette(void);
+    uint16_t mode_colorwaves(void);
+    uint16_t mode_fillnoise8(void);
+    uint16_t mode_noise16_1(void);
+    uint16_t mode_noise16_2(void);
+    uint16_t mode_noise16_3(void);
+    uint16_t mode_noise16_4(void);
+    uint16_t mode_colortwinkle(void);
+    uint16_t mode_lake(void);
+    uint16_t mode_meteor(void);
+    uint16_t mode_meteor_smooth(void);
+    uint16_t mode_railway(void);
+    uint16_t mode_ripple(void);
+    uint16_t mode_twinklefox(void);
+    uint16_t mode_twinklecat(void);
+    uint16_t mode_halloween_eyes(void);
+    uint16_t mode_static_pattern(void);
+    uint16_t mode_tri_static_pattern(void);
+    uint16_t mode_spots(void);
+    uint16_t mode_spots_fade(void);
+    uint16_t mode_glitter(void);
+    uint16_t mode_candle(void);
+    uint16_t mode_starburst(void);
+    uint16_t mode_exploding_fireworks(void);
+    uint16_t mode_bouncing_balls(void);
+    uint16_t mode_sinelon(void);
+    uint16_t mode_sinelon_dual(void);
+    uint16_t mode_sinelon_rainbow(void);
+    uint16_t mode_popcorn(void);
+    uint16_t mode_drip(void);
+    uint16_t mode_plasma(void);
+    uint16_t mode_percent(void);
+    uint16_t mode_ripple_rainbow(void);
+    uint16_t mode_heartbeat(void);
+    uint16_t mode_pacifica(void);
+    uint16_t mode_candle_multi(void);
+    uint16_t mode_solid_glitter(void);
+    uint16_t mode_sunrise(void);
+    uint16_t mode_phased(void);
+    uint16_t mode_twinkleup(void);
+    uint16_t mode_noisepal(void);
+    uint16_t mode_sinewave(void);
+    uint16_t mode_phased_noise(void);
+    uint16_t mode_flow(void);
+    uint16_t mode_chunchun(void);
+    uint16_t mode_dancing_shadows(void);
+    uint16_t mode_washing_machine(void);
+    uint16_t mode_candy_cane(void);
+    uint16_t mode_blends(void);
+    uint16_t mode_tv_simulator(void);
+    uint16_t mode_dynamic_smooth(void);
+    USERFX_MODES_LIST();
 
   private:
     NeoPixelWrapper *bus;

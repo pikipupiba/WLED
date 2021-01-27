@@ -21,12 +21,12 @@
     _mode[BUILTIN_MODE_COUNT + USERFX1_MODE_COUNT + USERFX2_MODE_FL_TWINKLES]               = &WS2812FX::mode_fl_twinkles;      \
 
 // on each line: prepend comma before mode, add mode function declaration, followed by a slash
-#define USERFX2_MODES_LIST()                \
-    ,mode_2DSwirl(void)                     \
-    ,mode_ScrollingWash(void)               \
-    ,mode_2Dfire2012(void)                  \
-    ,mode_blinktriggers(void)               \
-    ,mode_fl_twinkles(void)                 \
+#define USERFX2_MODES_LIST()                          \
+    uint16_t mode_2DSwirl(void);                      \
+    uint16_t mode_ScrollingWash(void);                \
+    uint16_t mode_2Dfire2012(void);                   \
+    uint16_t mode_blinktriggers(void);                \
+    uint16_t mode_fl_twinkles(void);                  \
 
 // prepend comma before each mode name, no comma after last name
 #define USERFX2_JSON_MODE_NAMES R"=====(,"*2D Swirl","*2D Scrolling Wash","*2D Fire2012","*blink triggers","*FL Twinkles")====="

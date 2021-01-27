@@ -9,9 +9,9 @@
 #define USERFX1_JSON_MODE_NAMES
 
 // on each line: prepend comma before mode, add mode function declaration, followed by a slash
-#define USERFX1_MODES_LIST()                                  \
-    ,writeLedsArrayToWled_XY(CRGB * leds)                     \
-    ,writeLedsArrayToWled(CRGB * leds)                     \
+#define USERFX1_MODES_LIST()                                        \
+    void writeLedsArrayToWled_XY(CRGB * leds);                  \
+    void writeLedsArrayToWled(CRGB * leds);                     \
 
 typedef struct xyPair {
   uint16_t x;

@@ -36,7 +36,7 @@ void setKMatrixHeight(uint16_t height) {
 uint16_t XY( uint8_t x, uint8_t y) { return (y * kMatrixWidth) + x; }
 
 // this function takes the progressive matrix stored in leds[], applies mapping, and writes it to WLED's buffers
-uint16_t WS2812FX::writeLedsArrayToWled_XY(CRGB * leds) {
+void WS2812FX::writeLedsArrayToWled_XY(CRGB * leds) {
   const xyPair * xytable = _segmentmaps[_segment_index].xyTablePointer;
 
   // TODO: bounds check xytable using _segmentmaps[_segment_index].xyTableNumEntries, it's possible to set SEGLEN larger than table
@@ -44,19 +44,13 @@ uint16_t WS2812FX::writeLedsArrayToWled_XY(CRGB * leds) {
   for (int i=0; i<SEGLEN; i++) {
      setPixelColor(i, leds[XY(xytable[i].x, xytable[i].y)].red, leds[XY(xytable[i].x, xytable[i].y)].green, leds[XY(xytable[i].x, xytable[i].y)].blue);
   }
-
-  // to fit within UserFX constraints, this WS2812FX method must return uint16_t (would be void otherwise)
-  return 0;
 }
 
 // this function takes the contents of leds[], and writes it to WLED's buffers
-uint16_t WS2812FX::writeLedsArrayToWled(CRGB * leds) {
+void WS2812FX::writeLedsArrayToWled(CRGB * leds) {
   for (int i=0; i<SEGLEN; i++) {
      setPixelColor(i, leds[i].red, leds[i].green, leds[i].blue);
   }
-
-  // to fit within UserFX constraints, this WS2812FX method must return uint16_t (would be void otherwise)
-  return 0;
 }
 
 int NUM_LEDS;
