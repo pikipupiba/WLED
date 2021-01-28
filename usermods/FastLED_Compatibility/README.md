@@ -100,7 +100,7 @@ FL_ALLOC(
 );
 
 FL_EVERY_N_MILLIS(flMillisTrigger1, 100) {
-	// do something every 100ms here
+  // do something every 100ms here
 }
 ```
 
@@ -118,7 +118,7 @@ If you want to do more advanced things with the trigger timer, use it as you wou
 
 ```
 FL_STATICVAR(triggerTimer).setPeriod(200);
-``` 
+```
 
 ### Nested Functions
 
