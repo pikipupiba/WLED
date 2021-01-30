@@ -39,6 +39,11 @@ uint16_t mode_fl_twinkles(void) {
     {
       CRGB incrementalColor = color;
       incrementalColor.nscale8( howMuchBrighter);
+
+      // (fix not in original sketch) if color is too dim to scale properly, double it so the next pass is hopefully better
+      if(!incrementalColor.r && !incrementalColor.g && !incrementalColor.b)
+        incrementalColor = color;
+
       return color + incrementalColor;
     }
 
