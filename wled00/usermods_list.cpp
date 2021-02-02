@@ -20,6 +20,9 @@
 #ifdef USERMOD_SENSORSTOMQTT
 #include "usermod_v2_SensorsToMqtt.h"
 #endif
+#if (defined(ENABLE_FL_MAPPING) || defined(ENABLE_FL_WRAPPER))
+  #include "../usermods/FastLED_Compatibility/FL_Mapping_Usermod.h"
+#endif
 
 void registerUsermods()
 {
@@ -38,5 +41,8 @@ void registerUsermods()
 #endif
 #ifdef USERMOD_SENSORSTOMQTT
   usermods.add(new UserMod_SensorsToMQTT());
+#endif
+#ifdef ENABLE_FL_MAPPING
+  usermods.add(new Usermod_FL_Mapping());
 #endif
 }
