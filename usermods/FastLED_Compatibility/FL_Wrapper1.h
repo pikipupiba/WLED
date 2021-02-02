@@ -5,11 +5,17 @@ typedef struct xyPair {
   uint16_t y;
 } xyPair;
 
+typedef struct fXyPair {
+  float x;
+  float y;
+} fXyPair;
+
 typedef struct Segmentmap {
-  uint16_t matrixWidth;
-  uint16_t matrixHeight;
-  const xyPair * xyTablePointer;
-  const uint16_t xyTableNumEntries;
+  uint16_t minVirtualScreenWidth;
+  uint16_t minVirtualScreenHeight;
+  uint16_t numElements;
+  char * mapname;
+  xyPair * xyTablePointer;
 } segmentmap;
 
 extern segmentmap _segmentmaps[MAX_NUM_SEGMENTS];
@@ -23,8 +29,8 @@ extern CRGB * leds;
 extern void * flStructPtr;
 
 #define FL_ALLOC_WITH_1_ARRAY_XY(FL_STRUCT_CONTENTS, TYPE1, NAME1, NUM_ELEMENTS1)                       \
-  kMatrixWidth = _segmentmaps[_segment_index].matrixWidth;                                              \
-  kMatrixHeight = _segmentmaps[_segment_index].matrixHeight;                                            \
+  kMatrixWidth = _segmentmaps[_segment_index].minVirtualScreenWidth;                                    \
+  kMatrixHeight = _segmentmaps[_segment_index].minVirtualScreenHeight;                                  \
   NUM_LEDS = (kMatrixWidth*kMatrixHeight);                                                              \
   struct fl_Struct{ FL_STRUCT_CONTENTS TYPE1 * NAME1; };                                                \
   int flAllocSize = (sizeof(CRGB) * NUM_LEDS) + sizeof(fl_Struct) + (sizeof(TYPE1) * NUM_ELEMENTS1);    \
@@ -50,8 +56,8 @@ extern void * flStructPtr;
 #define FL_STATICVAR(TESTVAR) (((fl_Struct*)flStructPtr)->TESTVAR)
 
 #define BEGIN_FASTLED_XY_COMPATIBILITY()                                          \
-          kMatrixWidth = _segmentmaps[_segment_index].matrixWidth;                \
-          kMatrixHeight = _segmentmaps[_segment_index].matrixHeight;              \
+          kMatrixWidth = _segmentmaps[_segment_index].minVirtualScreenWidth;      \
+          kMatrixHeight = _segmentmaps[_segment_index].minVirtualScreenHeight;    \
           NUM_LEDS = (kMatrixWidth*kMatrixHeight);                                \
           if(!SEGENV.allocateData(sizeof(CRGB) * NUM_LEDS)) return mode_static(); \
           leds = reinterpret_cast<CRGB*>(SEGENV.data);                            \
