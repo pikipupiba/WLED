@@ -107,11 +107,11 @@ FL_EVERY_N_MILLIS(flMillisTrigger1, 100) {
 These macros are defined for use with triggers:
 
 ```
-FL_EVERY_N_MILLIS()
-FL_EVERY_N_SECONDS()
-FL_EVERY_N_BSECONDS()
-FL_EVERY_N_MINUTES()
-FL_EVERY_N_HOURS()
+FL_EVERY_N_MILLIS()   // use with CEveryNMillis
+FL_EVERY_N_SECONDS()  // use with CEveryNSeconds
+FL_EVERY_N_BSECONDS() // use with CEveryNBSeconds
+FL_EVERY_N_MINUTES()  // use with CEveryNMinutes
+FL_EVERY_N_HOURS()    // use with CEveryNHours
 ```
 
 If you want to do more advanced things with the trigger timer, use it as you would another static variable. e.g.
@@ -180,9 +180,75 @@ or Add to PlatformIO Config:
 
 Compile and Upload and you should see a new "*2D Swirl" effect at the top of the Effects list.
 
-For 2D effects, edit `FL_Wrapper.cpp.h`, changing the values and entries in `_segmentmaps[]` to match your LEDs.  Note this table will hopefully be integrated into the main `_segments[]` table with a web interface in the future.
+### 2D Effects
 
-TODO: describe how to fill in the table in detail
+These features are only enabled with `ENABLE_FL_MAPPING` defined, add to myconfig.h:
+
+```
+#define ENABLE_FL_MAPPING
+```
+
+or Add to PlatformIO Config:
+
+```
+-D ENABLE_FL_MAPPING
+```
+
+2D Mapping Values are loaded from JSON files stored in the LittleFS filesystem, just like the WLED config and presets.  You can open up the filesystem browser that WLED serves by adding `/edit` to the end of your WLED device URL.
+
+Map files must start with `map_` and end with `.json` and only use lowercase characters.  The minimum contents for a map file is an array, containing 2-element arrays with X,Y coordinates as integers or floats.  
+
+e.g. `[[0,0],[1,0],[0,1],[1,1]]` for a 2x2 matrix with "progressive" (not serpentine) layout.
+
+The  units used for the coordinates do not matter, they will be internally scaled and converted to integers ranging from from 0 to `mapScaleMax` (currently 255, but this will likely change to another value that fits in a `uint16_t` in the future).  If your map starts above zero or uses negative numbers, the map will be shifted and scaled to fit within the 0-`mapScaleMax` range. 
+
+The above example and this example (`[[-1.0,0.0],[1.0,0.0],[-1.0,1.0],[1.0,1.0]]` will both result in the following map file after being processed:
+
+```
+{"numElements":4,"coordinates":[[0,0],[255,0],[0,255],[255,255]]}
+```
+
+Currently the map files are all scaled to a square, ignoring any non 1:1 aspect ratio you may want in your map.  That will be improved in the future.
+
+Making the mapping coordinates the same scale isn't good for effects that use a "virtual screen" (e.g. patterns that depend on the FastLED `XY()` function), as these effects likely need to compute pixel values for every pixel in the range `mapScaleMax*mapScaleMax`.  For these effects, we'll need to scale the map down to the minimum value to reduce RAM and CPU overhead to compute the effect.  
+
+To add a map file that supports a Virtual Screen effect, your map file needs to add values for `"minVirtualScreenWidth"` and `"minVirtualScreenHeight"`.  e.g.:
+
+```
+{
+	"minVirtualScreenWidth": 2,
+	"minVirtualScreenHeight": 2,
+	"coordinates": [
+		[0, 0],
+		[1, 0],
+		[0, 1],
+		[1, 1]
+	]
+}
+```
+
+This tells the effect that the Virtual Screen only needs to be 2 pixels wide and 2 pixels tall.  The above map will look like this after processing:
+
+`{"numElements":4,"idealScaleX":0.007843,"idealScaleY":0.007843,"minVirtualScreenWidth":2,"minVirtualScreenHeight":2,"coordinates":[[0,0],[255,0],[0,255],[255,255]]}`
+
+`"idealScaleX"` and `"idealScaleY"` may be removed from the map file in the future, as this is still a work in progress.
+
+Map files don't do anything on their own, there's another file that describes how to optionally apply a map to each segment in WLED.  `mapnames.json` contains an array with an optional string for each segment with the filename of the map to apply to the segment. e.g.
+
+`["/map_16x16serpentine.json","/map_dotstardisk17x17.json","/map_16x16progressive.json"]`
+
+The leading slash for the root directory is required in the name.  To skip a segment, use a 0-length string: `""`. `mapnames.json` is extremely simple right now, but later will have a more complex layout to enable more functionality.
+
+The onboard filesystem editor (`/edit`) has some limitations, but is pretty easy to use.  You can't create or access any folders besides root.  You can't rename.  Delete a file by right clicking on the name.  Make sure the name includes a leading slash for the root folder.
+
+After uploading/editing your maps and `mapnames.json`, reboot to have the maps get cleaned up and loaded.  You can open the map files in the filesystem editor to see how they were changed.  If you compile with `WLED_DEBUG` defined, you'll see the result of the map cleanup and what was loaded.  If you compile with `WLED_DEBUG` and `JSON_MAP_DEBUG` defined, you'll see an overwhelming amount of information that might be useful for debugging.
+
+This tool can be used to make map files for simple matrices:
+https://editor.p5js.org/laskater/sketches/mbb4x9Po6
+
+Some example maps are included in the `usermods/FastLED_Compatibility/maps/` directory.
+
+The DotStar Disk mapping was adapted from: https://github.com/evilgeniuslabs/sol-v2/blob/master/Map.h
 
 ## Improvements
 
