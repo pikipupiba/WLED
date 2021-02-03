@@ -5,6 +5,10 @@
 uint16_t mode_ScrollingWash(void) {
   BEGIN_FASTLED_COMPATIBILITY();
 
+  // check for a missing or too small xyTable[] before using
+  if(!_segmentmaps[_segment_index].xyTablePointer || _segmentmaps[_segment_index].numElements < NUM_LEDS)
+    return mode_static();
+
   const xyPair * xytable = _segmentmaps[_segment_index].xyTablePointer;
 
   for (int i=0; i<NUM_LEDS; i++) {

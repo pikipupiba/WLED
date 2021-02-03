@@ -4,9 +4,13 @@
 void writeLedsArrayToWled_XY(CRGB * leds) {
   const xyPair * xytable = _segmentmaps[_segment_index].xyTablePointer;
 
-  // TODO: bounds check xytable using _segmentmaps[_segment_index].xyTableNumEntries, it's possible to set SEGLEN larger than table
+  if(!xytable)
+    return;
 
-  for (int i=0; i<SEGLEN; i++) {
+  // it's possible to set SEGLEN larger than table, so check bounds before using
+  int ledsToWrite = min(SEGLEN, _segmentmaps[_segment_index].numElements);
+
+  for (int i=0; i<ledsToWrite; i++) {
      setPixelColor(i, leds[XY(xytable[i].x, xytable[i].y)].red, leds[XY(xytable[i].x, xytable[i].y)].green, leds[XY(xytable[i].x, xytable[i].y)].blue);
   }
 }

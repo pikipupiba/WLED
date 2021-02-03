@@ -32,6 +32,7 @@ extern void * flStructPtr;
   kMatrixWidth = _segmentmaps[_segment_index].minVirtualScreenWidth;                                    \
   kMatrixHeight = _segmentmaps[_segment_index].minVirtualScreenHeight;                                  \
   NUM_LEDS = (kMatrixWidth*kMatrixHeight);                                                              \
+  if(!NUM_LEDS) return mode_static();                                                                   \
   struct fl_Struct{ FL_STRUCT_CONTENTS TYPE1 * NAME1; };                                                \
   int flAllocSize = (sizeof(CRGB) * NUM_LEDS) + sizeof(fl_Struct) + (sizeof(TYPE1) * NUM_ELEMENTS1);    \
   if(!SEGENV.allocateData(flAllocSize)) return mode_static();                                           \
@@ -59,6 +60,7 @@ extern void * flStructPtr;
           kMatrixWidth = _segmentmaps[_segment_index].minVirtualScreenWidth;      \
           kMatrixHeight = _segmentmaps[_segment_index].minVirtualScreenHeight;    \
           NUM_LEDS = (kMatrixWidth*kMatrixHeight);                                \
+          if(!NUM_LEDS) return mode_static();                                     \
           if(!SEGENV.allocateData(sizeof(CRGB) * NUM_LEDS)) return mode_static(); \
           leds = reinterpret_cast<CRGB*>(SEGENV.data);                            \
 
