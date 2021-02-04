@@ -24,6 +24,21 @@ extern uint16_t kMatrixHeight;
 
 uint16_t XY( uint8_t x, uint8_t y);
 
+// allocate space for lookup table and populate at the beginning of each effect?
+  // how slow is this?
+  // what's the alternative?  Need to check for valid data at startup anyway
+
+// what if virtual screen is already allocated?
+
+// END_FASTLED() check for valid lookuptable pointer and call appropriate writeLeds() function?
+  // use kMatrixWidth for this?
+
+// AGifs.getVirtualScreen(**CRGB pointer, &width, &height)
+
+// ALLOC_VIRTUAL_SCREEN() before ALLOC()?
+
+
+
 extern int NUM_LEDS;
 extern CRGB * leds;
 extern void * flStructPtr;
@@ -83,10 +98,11 @@ extern void * flStructPtr;
   if(!SEGENV.call) {((fl_Struct*)flStructPtr)->NAME.reset(); ((fl_Struct*)flStructPtr)->NAME.setPeriod(N); } \
   if(((fl_Struct*)flStructPtr)->NAME)
 
-#define FL_EVERY_N_MILLIS   FL_EVERY_N
-#define FL_EVERY_N_SECONDS  FL_EVERY_N
-#define FL_EVERY_N_BSECONDS FL_EVERY_N
-#define FL_EVERY_N_MINUTES  FL_EVERY_N
-#define FL_EVERY_N_HOURS    FL_EVERY_N
+#define FL_EVERY_N_MILLIS       FL_EVERY_N
+#define FL_EVERY_N_MILLISECONDS FL_EVERY_N
+#define FL_EVERY_N_SECONDS      FL_EVERY_N
+#define FL_EVERY_N_BSECONDS     FL_EVERY_N
+#define FL_EVERY_N_MINUTES      FL_EVERY_N
+#define FL_EVERY_N_HOURS        FL_EVERY_N
 
 #define FL_SETUP() if(!SEGENV.call)
