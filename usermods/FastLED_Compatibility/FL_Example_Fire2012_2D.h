@@ -5,7 +5,9 @@
 // Fire2012 by Mark Kriegsman. Converted to WLED by Andrew Tuline. 
 // original https://github.com/FastLED/FastLED/blob/master/examples/Fire2012/Fire2012.ino
 uint16_t mode_2Dfire2012(void) {
-  FL_ALLOC_WITH_1_ARRAY_XY(
+  FL_ALLOC_VIRTUAL_SCREEN();  // This effect depends on leds[] being sized to kMatrixWidth * kMatrixHeight, and uses XY()
+
+  FL_ALLOC_WITH_1_ARRAY(
     unsigned long prevMillis;
     , byte, heat, NUM_LEDS
     );
@@ -46,7 +48,7 @@ uint16_t mode_2Dfire2012(void) {
   } // if millis
   // TODO: we might not need to update leds every time based on millis check?
 
-  END_FASTLED_XY_COMPATIBILITY();
+  END_FASTLED_COMPATIBILITY();
 
   return FRAMETIME;
 }

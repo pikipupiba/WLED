@@ -16,17 +16,31 @@ To make it easier to port FastLED sketches, FL_Wrapper manages an array that can
 
 Some FastLED sketches are made for rectangular matrices, where the width/height is set to `kMatrixWidth`/`kMatrixHeight`, `NUM_LEDS` is `kMatrixWidth*kMatrixHeight`, and an `XY()` function is defined that can be used in the sketch to set the LED matching an X/Y coordinate in the matrix: `leds[XY(x,y)]`.
 
-The `BEGIN_FASTLED_XY_COMPATIBILITY()` macro sets up all the FastLED compatibility as `BEGIN_FASTLED_COMPATIBILITY()` does, and also creates these variables:
+The `FL_ALLOC_VIRTUAL_SCREEN()` macro should be used before any other macro, and sets up these variables:
 
 ```
 kMatrixWidth = _segmentmaps[_segment_index].matrixWidth;
 kMatrixHeight = _segmentmaps[_segment_index].matrixHeight;
-int NUM_LEDS (kMatrixWidth*kMatrixHeight);
+NUM_LEDS = (kMatrixWidth*kMatrixHeight);
 ```
 
 The `XY()` function is created and depends on the above `kMatrixWidth` and `kMatrixHeight` values.  It is accessible to FastLED's `blur2d()` function.
 
-The `END_FASTLED_XY_COMPATIBILITY()` macro writes the contents of the `leds[]` array to WLED's pixel buffer
+When `FL_ALLOC_VIRTUAL_SCREEN()` is used in the effect, the `END_FASTLED_COMPATIBILITY()` macro writes the contents of the `leds[]` array to WLED's pixel buffer taking into account XY coordinates.
+
+Usage example:
+
+```
+uint16_t mode_swirl2D(void) {
+  FL_ALLOC_VIRTUAL_SCREEN();
+  BEGIN_FASTLED_COMPATIBILITY();
+  ...
+  leds[XY(i,j)] = CRGB::Black;
+  ...
+  END_FASTLED_COMPATIBILITY();
+  return FRAMETIME;
+}
+```
 
 ### Allocating Persistent Memory for Variables
 
@@ -55,14 +69,12 @@ if ((curMillis - FL_STATICVAR(prevMillis)) >= 100) {
 
 Use `END_FASTLED_COMPATIBILITY()` at the end of the effect.
 
-TODO: create macro for `FL_ALLOC_XY()`, in the meantime use `FL_ALLOC_WITH_1_ARRAY_XY()` and create a dummy array to store 1 byte.
-
 ### Allocating Persistent Memory for Arrays
 
-Arrays need to be allocated differently than variables, as they can't be put directly into the struct if they depend on a parameter that is variable per segment, e.g. `NUM_LEDS`.  The macro `FL_ALLOC_WITH_1_ARRAY_XY()` can allocate variables and an array. To allocate memory for `byte heat[NUM_LEDS]`, use:
+Arrays need to be allocated differently than variables, as they can't be put directly into the struct if they depend on a parameter that is variable per segment, e.g. `NUM_LEDS`.  The macro `FL_ALLOC_WITH_1_ARRAY()` can allocate variables and an array. To allocate memory for `byte heat[NUM_LEDS]`, use:
 
 ```
-  FL_ALLOC_WITH_1_ARRAY_XY(
+  FL_ALLOC_WITH_1_ARRAY(
     unsigned long prevMillis;
     , byte, heat, NUM_LEDS
     );
@@ -78,7 +90,7 @@ for (int mh = 0; mh < kMatrixHeight; mh++) {
 }
 ```
 
-TODO: create macro for `FL_ALLOC_WITH_1_ARRAY()` (no XY) and options for multiple arrays
+TODO: create macro supporting multiple arrays
 
 ### Setup()
 

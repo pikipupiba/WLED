@@ -5,7 +5,7 @@
 // https://gist.github.com/kriegsman/5408ecd397744ba0393e
 // Note: this effect is already in WLED with a different implementation (mode_colortwinkle), which can be used for comparison
 uint16_t mode_fl_twinkles(void) {
-  FL_ALLOC_WITH_1_ARRAY_XY(
+  FL_ALLOC_WITH_1_ARRAY(
 
     , uint8_t, directionFlags, (NUM_LEDS+7) / 8);
 

@@ -6,6 +6,7 @@
   int NUM_LEDS;
   CRGB * leds;
   void * flStructPtr;
+  bool fl_usingXY;
 #endif
 
 #ifdef ENABLE_FL_MAPPING

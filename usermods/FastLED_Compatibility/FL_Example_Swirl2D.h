@@ -5,7 +5,9 @@
 // SmartMatrixSwirl by Mark Kriegsman https://gist.github.com/kriegsman/5adca44e14ad025e6d3b
 // https://forum.makerforums.info/t/2-dimensional-blur-this-video-shows-the-new-blur2d-capability-newly-available-on-the-fastled/64648
 uint16_t mode_swirl2D(void) {
-  BEGIN_FASTLED_XY_COMPATIBILITY(); // this macro sets up leds[], NUM_LEDS, kMatrixWidth, and kMatrixHeight to match the values configured for this segment
+  FL_ALLOC_VIRTUAL_SCREEN();      // This effect depends on leds[] being sized to kMatrixWidth * kMatrixHeight, and uses XY()
+
+  BEGIN_FASTLED_COMPATIBILITY();
 
   const uint8_t kBorderWidth = 2;
 
@@ -32,7 +34,7 @@ uint16_t mode_swirl2D(void) {
   leds[XY( i,nj)] += CHSV( ms / 37, 200, 255);
   leds[XY(ni, j)] += CHSV( ms / 41, 200, 255);
 
-  END_FASTLED_XY_COMPATIBILITY(); // this macro writes the contents of leds[] to WLED
+  END_FASTLED_COMPATIBILITY(); // this macro writes the contents of leds[] to WLED
 
   return FRAMETIME;
 }
