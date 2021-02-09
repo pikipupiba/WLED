@@ -53,6 +53,12 @@ extern void * flStructPtr;
   if(!NUM_LEDS) return mode_static();                                     \
   fl_usingXY = true;                                                      \
 
+#define FL_GET_VIRTUAL_SCREEN(getVirtualScreenFunction)  \
+  leds = (CRGB *)getVirtualScreenFunction(_segmentmaps[_segment_index].minVirtualScreenWidth, _segmentmaps[_segment_index].minVirtualScreenHeight); \
+  NUM_LEDS = (kMatrixWidth*kMatrixHeight);                              \
+  if(!NUM_LEDS) return mode_static();                                   \
+  fl_usingXY = true;                                                    \
+
 // The "XY" macros are deprecated, please use the code in the macro and not the macro itself in the future
 #define FL_ALLOC_WITH_1_ARRAY_XY(FL_STRUCT_CONTENTS, TYPE1, NAME1, NUM_ELEMENTS1)                       \
   FL_ALLOC_VIRTUAL_SCREEN();                                                                            \

@@ -23,6 +23,9 @@
 #if (defined(ENABLE_FL_MAPPING) || defined(ENABLE_FL_WRAPPER))
   #include "../usermods/FastLED_Compatibility/FL_Mapping_Usermod.h"
 #endif
+#ifdef USERMOD_ANIMATEDGIFS
+  #include "../usermods/AnimatedGIFs/usermod_animatedgifs.h"
+#endif
 
 void registerUsermods()
 {
@@ -45,4 +48,8 @@ void registerUsermods()
 #ifdef ENABLE_FL_MAPPING
   usermods.add(new Usermod_FL_Mapping());
 #endif
+#ifdef USERMOD_ANIMATEDGIFS
+  usermods.add(new AnimatedGifsUsermod());
+#endif
 }
+ 
