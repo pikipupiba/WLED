@@ -6,6 +6,8 @@
 
 #include "animatedgifs_common.h"
 
+#include "FilenameFunctions.cpp"
+
 // these example GIFs are from the AnimatedGIF library, see that library for the source, and instructions on how to make your own GIF into a C header file
 #include "homer_tiny.h"
 #include "badgers.h"
@@ -18,8 +20,10 @@
 
 // add gif name and sizeof(gif) to the below lists
 const uint8_t * gifsList[] = { rainbow2, rainbow1, infinity1 };
+const char * gifsNameList[] = { "rainbow2", "rainbow1", "infinity1" }; // can contain zero-length or NULL strings, or a zero-length array if you don't want to print the name)
 const int gifsSizeList[] = { sizeof(rainbow2), sizeof(rainbow1), sizeof(infinity1) };
 //const uint8_t * gifsList[] = { infinity1 };
+//const char * gifsNameList[] = { "infinity1" }; // can contain zero-length or NULL strings, or a zero-length array if you don't want to print the name)
 //const int gifsSizeList[] = { sizeof(infinity1) };
 
 // defaults in case config hasn't been written to cfg.json yet
@@ -28,6 +32,32 @@ const int gifsSizeList[] = { sizeof(rainbow2), sizeof(rainbow1), sizeof(infinity
 #define AGIF_MATRIX_WIDTH 64
 #define AGIF_MATRIX_HEIGHT 64
 #define PLAYBACK_MODE playModeFirst
+
+#ifndef AGIFS_USE_SD
+//  #define AGIFS_USE_SD
+#endif
+
+#include <LITTLEFS.h>
+
+#ifdef AGIFS_USE_SD
+  #include <SD.h>
+#endif
+
+// ESP32 FS Libraries can't handle a trailing slash in the directory name
+#define GIF_DIRECTORY_SD "/gifs"
+#define GIF_DIRECTORY_LITTLEFS "/"
+
+int num_files_SD = 0;
+int num_files_LittleFS = 0;
+const int num_files_Memory = sizeof(gifsList) ? sizeof(gifsList)/sizeof(gifsList[0]) : 0;
+
+
+bool useLittleFS = true;
+#ifdef AGIFS_USE_SD
+  bool useSD = true;
+#else
+  bool useSD = false;
+#endif
 
 int gifMatrixWidth;
 int gifMatrixHeight;
@@ -41,8 +71,6 @@ int gifIndex = 0;
 GifDecoder<320, 0, 12, true> decoder;
 
 CRGB * gifMatrixBuffer;
-
-#define USE_SMARTMATRIX         0
 
 void screenClearCallback(void) {
   fill_solid(gifMatrixBuffer, gifMatrixWidth*gifMatrixHeight, CRGB::Black);
@@ -70,6 +98,27 @@ void agifsSetNextGifIndex(int index, bool switchImmediately) {
     playNextGif = true;
 }
 
+#ifdef AGIFS_USE_SD
+  int initFileSystem_SD(int chipSelectPin) {
+    if (chipSelectPin >= 0) {
+      pinMode(chipSelectPin, OUTPUT);
+    }
+
+    // initialize the SD card at full speed
+    if (!SD.begin(chipSelectPin))
+      return -1;
+    else
+      return 0;
+  }
+#endif
+
+int initFileSystem_LITTLEFS() {
+  if (!LITTLEFS.begin())
+    return -1;
+  else
+    return 0;
+}
+
 class AnimatedGifsUsermod : public Usermod {
   public:
     void setup() {
@@ -78,6 +127,84 @@ class AnimatedGifsUsermod : public Usermod {
       decoder.setScreenClearCallback(screenClearCallback);
       decoder.setUpdateScreenCallback(updateScreenCallback);
       decoder.setDrawPixelCallback(drawPixelCallback);
+
+      decoder.setFileSeekCallback(fileSeekCallback);
+      decoder.setFilePositionCallback(filePositionCallback);
+      decoder.setFileReadCallback(fileReadCallback);
+      decoder.setFileReadBlockCallback(fileReadBlockCallback);
+      decoder.setFileSizeCallback(fileSizeCallback);
+
+      Serial.println("AnimatedGIFs Usermod:");
+
+      for(int i=0; i<num_files_Memory; i++) {
+        Serial.print(i);
+        Serial.print(" - Memory:");
+        if(i < sizeof(gifsNameList) && gifsNameList[i] && strlen(gifsNameList[i])) {
+          Serial.println(gifsNameList[i]);
+        } else {
+          Serial.print("gifsList[");
+          Serial.print(i);
+          Serial.println("]");
+        }
+      }
+
+      if(initFileSystem_LITTLEFS() < 0) {
+        Serial.println("No LITTLEFS");
+        useLittleFS = false;
+      } else {
+        // Determine how many animated GIF files exist in LittleFS
+        num_files_LittleFS = enumerateGIFFiles(LITTLEFS, GIF_DIRECTORY_LITTLEFS, true, "LittleFS", num_files_Memory);      
+      }
+
+      if(useLittleFS && num_files_LittleFS < 0) {
+        Serial.println("No LittleFS gifs directory");
+        useLittleFS = false;
+        num_files_LittleFS = 0;
+      }
+
+      if(useLittleFS && !num_files_LittleFS) {
+        Serial.println("Empty LittleFS gifs directory");
+        useLittleFS = false;
+      }    
+
+      #ifdef AGIFS_USE_SD
+        if(initFileSystem_SD(SD_CS) < 0) {
+          Serial.println("No SD card");
+          useSD = false;
+        } else {
+          // Determine how many animated GIF files exist in SD card
+          num_files_SD = enumerateGIFFiles(SD, GIF_DIRECTORY_SD, true, "SD", num_files_Memory + num_files_LittleFS);      
+        }
+
+        if(useSD && num_files_SD < 0) {
+          Serial.println("No SD gifs directory");
+          useSD = false;
+          num_files_SD = 0;
+        }
+
+        if(useSD && !num_files_SD) {
+          Serial.println("Empty SD gifs directory");
+        }
+      #endif
+
+      #ifdef AGIFS_USE_SD
+        Serial.print("useSD: ");
+        Serial.println(useSD);
+        Serial.print("num_files_SD: ");
+        Serial.println(num_files_SD);
+      #endif
+
+      Serial.print("useLittleFS: ");
+      Serial.println(useLittleFS);
+      Serial.print("num_files_LittleFS: ");
+      Serial.println(num_files_LittleFS);
+
+      Serial.print("num_files_Memory: ");
+      Serial.println(num_files_Memory);
+
+      if(!num_files_SD && !num_files_LittleFS && !num_files_Memory) {
+        Serial.println("No GIFs to play");
+      }
     }
 
     void loop() {
@@ -96,6 +223,10 @@ class AnimatedGifsUsermod : public Usermod {
 
       unsigned long now = millis();
 
+      // just return here if there's no GIFs to play
+      if(!num_files_SD && !num_files_LittleFS && !num_files_Memory)
+        return;
+
       // default behavior is to play the gif for displayTimeSeconds or for numFullCycles, whichever comes first
       if((playMode == playModeFirst) && ((now - displayStartTime_millis) > (displayTimeSeconds * 1000) || decoder.getCycleNumber() > numFullCycles)) {
         playNextGif = true;
@@ -110,34 +241,72 @@ class AnimatedGifsUsermod : public Usermod {
       if((millis() - lastFrameDisplayTime) > currentFrameDelay) {
         if(playNextGif)
         {
-          playNextGif = false;
+          bool fileOpened = false;
 
-          // check for valid gifIndex before using
-          gifIndex %= sizeof(gifsList)/sizeof(gifsList[0]);
-
-          // start decoding, skipping to the next GIF if there's an error
-          if(decoder.startDecoding((uint8_t *)gifsList[gifIndex], gifsSizeList[gifIndex]) < 0) {
-            playNextGif = true;
-            return;
+          if (gifIndex < num_files_Memory) {
+            fileOpened = true;
           }
 
-          // Calculate time in the future to terminate animation
-          displayStartTime_millis = now;
+          if (((gifIndex >= num_files_Memory) && (gifIndex < (num_files_Memory + num_files_LittleFS))) &&
+            openGifFilenameByIndex(LITTLEFS, GIF_DIRECTORY_LITTLEFS, (gifIndex - num_files_Memory), true, "LittleFS") >= 0) {
+            fileOpened = true;
+          }
 
-          // get the index for the next pass through
-          gifIndex++;
+          #ifdef AGIFS_USE_SD
+            if (((gifIndex >= num_files_Memory + num_files_LittleFS) && (gifIndex < (num_files_Memory + num_files_LittleFS + num_files_SD))) &&
+              openGifFilenameByIndex(SD, GIF_DIRECTORY_SD, (gifIndex - num_files_Memory - num_files_LittleFS), true, "SD") >= 0) {
+              fileOpened = true;
+            }
+          #endif
+
+          if(fileOpened) {
+            int result;
+
+            // try to start decoding GIF.  If there's any error, conditions are set up to increment gifIndex and try again on the next loop()
+            if (gifIndex < num_files_Memory) {
+              Serial.print("Pathname: Memory:");
+              // If there's a file name to print, print it
+              if(gifIndex < sizeof(gifsNameList) && gifsNameList[gifIndex] && strlen(gifsNameList[gifIndex])) {
+                Serial.println(gifsNameList[gifIndex]);
+              } else {
+                Serial.print("gifsList[");
+                Serial.print(gifIndex);
+                Serial.println("]");
+              }
+              result = decoder.startDecoding((uint8_t *)gifsList[gifIndex], gifsSizeList[gifIndex]);
+            } else {
+              Serial.print("startDecoding:");
+              Serial.println(gifIndex);
+              result = decoder.startDecoding();
+            }
+
+            if (result >= 0) {
+              // good result, clear playNextGif so we know to decode a frame, and don't load a new GIF on the next pass
+              playNextGif = false;
+
+              // Calculate time in the future to terminate animation
+              displayStartTime_millis = now;          
+            }
+          }
+
+          // get the gifIndex for the next pass through
+          if (++gifIndex >= (num_files_SD + num_files_LittleFS + num_files_Memory)) {
+            gifIndex = 0;
+          }
         }
 
-        // decode frame without delaying after decode
-        int result = decoder.decodeFrame(false);
+        if(!playNextGif) {
+          // decode frame, false == don't delay after decode
+          int result = decoder.decodeFrame(false);
 
-        lastFrameDisplayTime = now;
-        currentFrameDelay = decoder.getFrameDelay_ms();
+          lastFrameDisplayTime = now;
+          currentFrameDelay = decoder.getFrameDelay_ms();
 
-        // it's time to start decoding a new GIF if there was an error, and don't wait to decode
-        if(result < 0) {
-          playNextGif = true;
-          currentFrameDelay = 0;
+          // it's time to start decoding a new GIF if there was an error, without any delay
+          if(result < 0) {
+            playNextGif = true;
+            currentFrameDelay = 0;
+          }
         }
       }
     }

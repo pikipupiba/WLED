@@ -12,6 +12,7 @@ uint16_t mode_agifs2D(void) {
     uint8_t intensityPrev;
     );
 
+  // if the intensity slider changed, tell the animatedGIFs Usermod to switch to the new index on the next frame
   if(FL_STATICVAR(intensityPrev) != SEGMENT.intensity) {
     FL_STATICVAR(intensityPrev) = SEGMENT.intensity;
     agifsSetNextGifIndex(SEGMENT.intensity, true);
