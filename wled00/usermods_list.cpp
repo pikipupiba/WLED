@@ -24,6 +24,7 @@
   #include "../usermods/FastLED_Compatibility/FL_Mapping_Usermod.h"
 #endif
 #ifdef USERMOD_ANIMATEDGIFS
+  #include <SD.h> // needed here to make it onto PlatformIO Dependency Graph, otherwise would only need it inside the Usermod
   #include "../usermods/AnimatedGIFs/usermod_animatedgifs.h"
 #endif
 

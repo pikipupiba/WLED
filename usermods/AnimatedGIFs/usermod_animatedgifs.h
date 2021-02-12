@@ -2,10 +2,11 @@
 
 #include "wled.h"
 
+#include <LITTLEFS.h>
+#include <SD.h>
 #include <GifDecoder.h>
 
 #include "animatedgifs_common.h"
-
 #include "FilenameFunctions.cpp"
 
 // these example GIFs are from the AnimatedGIF library, see that library for the source, and instructions on how to make your own GIF into a C header file
@@ -33,15 +34,12 @@ const int gifsSizeList[] = { sizeof(rainbow2), sizeof(rainbow1), sizeof(infinity
 #define AGIF_MATRIX_HEIGHT 64
 #define PLAYBACK_MODE playModeFirst
 
-#ifndef AGIFS_USE_SD
-//  #define AGIFS_USE_SD
-#endif
+// SD card support isn't enabled by default, define here or in my_config/PlatformIO config
+//#define AGIFS_USE_SD
 
-#include <LITTLEFS.h>
+// The ESP32 SD library has a bug that sometimes requires SD.begin() to be called multiple times to work, increase this if needed
+#define SD_NUM_TRIES 2
 
-#ifdef AGIFS_USE_SD
-  #include <SD.h>
-#endif
 
 // ESP32 FS Libraries can't handle a trailing slash in the directory name
 #define GIF_DIRECTORY_SD "/gifs"
@@ -66,6 +64,10 @@ int numFullCycles;
 int playMode;
 bool playNextGif = true;     // we haven't loaded a GIF yet on first pass through, make sure we do that
 int gifIndex = 0;
+int agifSdPinClk = -1;
+int agifSdPinMiso = -1;
+int agifSdPinMosi = -1;
+int agifSdPinCs = -1;
 
 // decoder has width=320 (max AnimatedGIF library can support), height=lzwMax=0 (doesn't matter), use malloc for buffer
 GifDecoder<320, 0, 12, true> decoder;
@@ -99,16 +101,36 @@ void agifsSetNextGifIndex(int index, bool switchImmediately) {
 }
 
 #ifdef AGIFS_USE_SD
-  int initFileSystem_SD(int chipSelectPin) {
-    if (chipSelectPin >= 0) {
-      pinMode(chipSelectPin, OUTPUT);
+  int initFileSystem_SD() {
+    bool result;
+    int tries = 1;
+
+    // don't use SD if the critical pins aren't configured (sdCs is optional)
+    if((agifSdPinClk < 0) || (agifSdPinMiso < 0) || (agifSdPinMosi < 0))
+      return -1;
+
+    SPI.begin(agifSdPinClk, agifSdPinMiso, agifSdPinMosi, agifSdPinCs); // normal SPI with CS
+
+    while(!(result = SD.begin(agifSdPinCs, SPI, 10000000)))
+    {
+      Serial.print("fail");
+      delay(10);
+      if(tries >= SD_NUM_TRIES)
+        break;
+      tries++;
     }
 
-    // initialize the SD card at full speed
-    if (!SD.begin(chipSelectPin))
+    if(!result) {
+      Serial.print("Card Mount Failed after ");
+      Serial.print(tries);
+      Serial.println(" tries");
       return -1;
-    else
+    } else {
+      Serial.print("SD Card Mounted after ");
+      Serial.print(tries);
+      Serial.println(" tries");
       return 0;
+    }
   }
 #endif
 
@@ -168,7 +190,7 @@ class AnimatedGifsUsermod : public Usermod {
       }    
 
       #ifdef AGIFS_USE_SD
-        if(initFileSystem_SD(SD_CS) < 0) {
+        if(initFileSystem_SD() < 0) {
           Serial.println("No SD card");
           useSD = false;
         } else {
@@ -319,6 +341,10 @@ class AnimatedGifsUsermod : public Usermod {
       top["dtSec"] = displayTimeSeconds;
       top["numCyc"] = numFullCycles;
       top["playMode"] = playMode;
+      top["sdClk"] = agifSdPinClk;
+      top["sdMiso"] = agifSdPinMiso;
+      top["sdMosi"] = agifSdPinMosi;
+      top["sdCs"] = agifSdPinCs;
     }
 
     void readFromConfig(JsonObject& root)
@@ -331,13 +357,21 @@ class AnimatedGifsUsermod : public Usermod {
                       top.containsKey("vsH") &&
                       top.containsKey("dtSec") &&
                       top.containsKey("numCyc") &&
-                      top.containsKey("playMode");
+                      top.containsKey("playMode") &&
+                      top.containsKey("sdClk") &&
+                      top.containsKey("sdMiso") &&
+                      top.containsKey("sdMosi") &&
+                      top.containsKey("sdCs");
 
       gifMatrixWidth = top["vsW"] | AGIF_MATRIX_WIDTH; //The value right of the pipe "|" is the default value in case your setting was not present in cfg.json (e.g. first boot)
       gifMatrixHeight = top["vsH"] | AGIF_MATRIX_HEIGHT;
       displayTimeSeconds = top["dtSec"] | DISPLAY_TIME_SECONDS;
       numFullCycles = top["numCyc"] | NUMBER_FULL_CYCLES;
       playMode = top["playMode"] | PLAYBACK_MODE;
+      agifSdPinClk = top["sdClk"] | -1;
+      agifSdPinMiso = top["sdMiso"] | -1;
+      agifSdPinMosi = top["sdMosi"] | -1;
+      agifSdPinCs = top["sdCs"] | -1;
     }
 
   private:
