@@ -1303,7 +1303,7 @@ function unfocusSliders() {
 }
 
 //sliding UI
-const _C = document.querySelector('.container'), N = 4;
+const _C = document.querySelector('.container'), N = 8;
 
 let iSlide = 0, x0 = null, scrollS = 0, locked = false, w;
 
