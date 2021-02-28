@@ -23,9 +23,9 @@
 			<button id="buttonNl" onclick="toggleNl()"><i class="icons">&#xe2a2;</i><p class="tab-label">Timer</p></button>
 			<button id="buttonSync" onclick="toggleSync()"><i class="icons">&#xe116;</i><p class="tab-label">Sync</p></button>
 			<button id="buttonSr" onclick="toggleLiveview()"><i class="icons">&#xe410;</i><p class="tab-label">Peek</p></button>
-		<button id="buttonI" onclick="toggleInfo()"><i class="icons">&#xe34b;</i><p class="tab-label">Info</p></button>
+			<button id="buttonI" onclick="toggleInfo()"><i class="icons">&#xe34b;</i><p class="tab-label">Info</p></button>
 			<button onclick="window.location.href = '/settings';"><i class="icons">&#xe0a2;</i><p class="tab-label">Config</p></button>
-		<button id="buttonPcm" onclick="togglePcMode(true)"><i class="icons">&#xe23d;</i><p class="tab-label">PC Mode</p></button>
+			<button id="buttonPcm" onclick="togglePcMode(true)"><i class="icons">&#xe23d;</i><p class="tab-label">PC Mode</p></button>
 		</div>
 		<div id="briwrap">
 			<p class="hd">Brightness</p>
@@ -158,51 +158,10 @@
 		Time per preset: <input id="cyct" class="noslide" type="number" min="0.2" max="6553.5" step="0.1" value="1.2">s<br>
 		Transition: <input id="cyctt" class="noslide" type="number" min="0" max="65.5" step="0.1" value="0.7">s
 	</div>
+	<container class="test"></container>
+	
+	<!-- <script src="ledj.htm.js"></script> -->
 
-	<div id="RGB_Empire" class="tabcontent">
-		<p class="labels">Effect speed</p>
-		<div class="staytop">
-			<i class="icons slider-icon">&#xe325;</i>
-			<div class="sliderwrap il">
-				<input id="slider1" class="noslide" onchange="setSpeed()" oninput="updateTrail(this)" max="255" min="0" type="range" value="128" />
-				<output class="sliderbubble hidden"></output>
-				<div class="sliderdisplay"></div>
-			</div>
-		</div>
-		<p class="labels">Effect intensity</p>
-		<div class="staytop" id="staytop1">
-			<i class="icons slider-icon" onclick="tglLabels()">&#xe409;</i>
-			<div class="sliderwrap il">
-				<input id="slider2" class="noslide" onchange="setIntensity()" oninput="updateTrail(this)" max="255" min="0" type="range" value="128" />
-				<output class="sliderbubble hidden"></output>
-				<div class="sliderdisplay"></div>
-			</div>
-		</div>
-		<div>
-			<button class="btn btn-s" id="btn_tap_tempo" onclick="rSegs()">Tap Tempo</button>
-		</div>
-		
-		<div>
-			<button class="btn btn-s" id="btn_tempo_1_4" onclick="">1/4x</button>
-			<button class="btn btn-s" id="btn_tempo_1_2" onclick="">1/2x</button>
-			<button class="btn btn-s" id="btn_tempo_1" onclick="">1x</button>
-			<button class="btn btn-s" id="btn_tempo_2" onclick="">2x</button>
-			<button class="btn btn-s" id="btn_tempo_4" onclick="">4x</button>
-		</div>
-		
-	</div>
-
-	<div id="Song" class="tabcontent">
-		<p>Song Bloo</p>
-	</div>
-
-	<div id="Sequences" class="tabcontent">
-		<p>Sequences Shmeekwences</p>
-	</div>
-
-	<div id="Tab_7" class="tabcontent">
-		<p>Tab 7 is heaven.</p>
-	</div>
 </div>
 
 <div class="tab bot" id="bot">

@@ -1,0 +1,13 @@
+.btn-ledj-1 {
+	padding: 8px;
+	margin: 10px;
+	width: 75px;
+	font-size: 19px;
+	background-color: var(--c-3);
+	color: var(--c-f);
+	border: 0px solid white;
+	border-radius: 25px;
+	transition-duration: 0.5s;
+	-webkit-backface-visibility: hidden;
+	-webkit-transform:translate3d(0,0,0);
+}
