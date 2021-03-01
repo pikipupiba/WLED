@@ -23,3 +23,13 @@
 */
 
 //#define MAX_LEDS 1500       //Maximum total LEDs. More than 1500 might create a low memory situation on ESP8266.
+#define MAX_LEDS 5000       //Maximum total LEDs. More than 1500 might create a low memory situation on ESP8266.
+#define ENABLE_USERFX
+
+#define USERFX1_H "../usermods/osc_animations/rainbow_wave_osc.h"
+#define USERFX1_NAME RAINBOW_WAVE_OSC
+
+#define USERFX2_H "../usermods/osc_animations/strobe_osc.h"
+#define USERFX2_NAME STROBE_OSC
+
+#include "../usermods/osc/osc_common.h"
