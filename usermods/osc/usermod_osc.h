@@ -3,7 +3,6 @@
 #include "wled.h"
 
 #include "osc_common.h"
-#include "FilenameFunctions.cpp"
 
 // defaults in case config hasn't been written to cfg.json yet
 #define DISPLAY_TIME_SECONDS 10
