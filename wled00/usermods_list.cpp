@@ -1,4 +1,6 @@
 #include "wled.h"
+
+#define ENABLE_OSC
 /*
  * Register your v2 usermods here!
  *   (for v1 usermods using just usermod.cpp, you can ignore this file)
@@ -27,6 +29,10 @@
   #include <SD.h> // needed here to make it onto PlatformIO Dependency Graph, otherwise would only need it inside the Usermod
   #include "../usermods/AnimatedGIFs/usermod_animatedgifs.h"
 #endif
+#ifdef ENABLE_OSC
+  #include "../usermods/osc/usermod_osc.h"
+#endif
+
 
 void registerUsermods()
 {
@@ -51,6 +57,9 @@ void registerUsermods()
 #endif
 #ifdef USERMOD_ANIMATEDGIFS
   usermods.add(new AnimatedGifsUsermod());
+#endif
+#ifdef ENABLE_OSC
+  usermods.add(new OSC_Usermod());
 #endif
 }
  

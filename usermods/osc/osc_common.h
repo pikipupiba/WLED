@@ -1,16 +1,27 @@
 #pragma once
 
-struct OSC_Data
+#include "Arduino.h"
+#include <vector>
+
+struct OSC_Member
 {
-    uint8_t hue;
-    float hue_speed;
-    float hue_offset;
-    uint8_t brightness;
-    uint16_t position;
-    float position_offset;
-    float duty_cycle;
-    float bpm;
-    float strobe_multiplier;
+    String name;
+    float data;
+    float value;
 };
 
+struct OSC_Data
+{
+    std::vector<OSC_Member> data;
+    std::vector<OSC_Member> value; //assumed you meant this
+
+
+};
+
+
+
 extern OSC_Data osc_data;
+
+// OSC_Member member = {"name", 0.0};
+
+// osc_data.data.push_back(member);

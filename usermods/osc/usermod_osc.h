@@ -4,329 +4,239 @@
 
 #include "osc_common.h"
 
-// defaults in case config hasn't been written to cfg.json yet
-#define DISPLAY_TIME_SECONDS 10
-#define NUMBER_FULL_CYCLES   100
-#define AGIF_MATRIX_WIDTH 64
-#define AGIF_MATRIX_HEIGHT 64
-#define PLAYBACK_MODE playModeFirst
+#include <Arduino.h>
 
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#else
+#include <WiFi.h>
+#endif
+#include <WiFiUdp.h>
 
+//  #define ENABLE_DEVFEATURE_SHOW_UDP_PACKET
+#define DISABLE_OSC_COMMON
 
-int gifMatrixWidth;
-int gifMatrixHeight;
-int displayTimeSeconds;
-int numFullCycles;
-int playMode;
-bool playNextGif = true;     // we haven't loaded a GIF yet on first pass through, make sure we do that
-int gifIndex = 0;
-int agifSdPinClk = -1;
-int agifSdPinMiso = -1;
-int agifSdPinMosi = -1;
-int agifSdPinCs = -1;
+char ssid[] = "Skynet2400"; // your network SSID (name)
+char pass[] = "af4d8bc9ab"; // your network password
 
-void screenClearCallback(void) {
-  fill_solid(gifMatrixBuffer, gifMatrixWidth*gifMatrixHeight, CRGB::Black);
-}
+// A UDP instance to let us send and receive packets over UDP
+WiFiUDP Udp;
+const IPAddress outIp(192, 168, 1, 204); // remote IP (not needed for receive)
+const unsigned int outPort = 9999;       // remote port (not needed for receive)
+const unsigned int localPort = 7000;     // local port to listen for UDP packets (here's where we send the packets)
 
-void updateScreenCallback(void) {
-  // don't need to do anything here
-}
+//  #ifndef ENABLE_DEVFEATURE_SHOW_UDP_PACKET
+// #include <OSCMessage.h>
+// #include <OSCBundle.h>
+// #include <OSCData.h>
 
-void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
-  if(x < gifMatrixWidth && y < gifMatrixHeight)
-    gifMatrixBuffer[(y*gifMatrixWidth) + x] = CRGB(red, green, blue);
-}
+#include "src/dependencies/OSC/OSCMessage.h"
+#include "src/dependencies/OSC/OSCBundle.h"
+#include "src/dependencies/OSC/OSCData.h"
 
-void * agifsGetVirtualScreen(uint16_t width, uint16_t height) {
-  kMatrixWidth = gifMatrixWidth;
-  kMatrixHeight = gifMatrixHeight;
+OSCErrorCode error;
+unsigned int ledState = LOW; // LOW means led is *on*
+//  #endif// ENABLE_DEVFEATURE_SHOW_UDP_PACKET
 
-  return (void*)gifMatrixBuffer;
-}
-
-void agifsSetNextGifIndex(int index, bool switchImmediately) {
-  gifIndex = index;
-  if(switchImmediately)
-    playNextGif = true;
-}
-
-#ifdef AGIFS_USE_SD
-  int initFileSystem_SD() {
-    bool result;
-    int tries = 1;
-
-    // don't use SD if the critical pins aren't configured (sdCs is optional)
-    if((agifSdPinClk < 0) || (agifSdPinMiso < 0) || (agifSdPinMosi < 0))
-      return -1;
-
-    SPI.begin(agifSdPinClk, agifSdPinMiso, agifSdPinMosi, agifSdPinCs); // normal SPI with CS
-
-    while(!(result = SD.begin(agifSdPinCs, SPI, 10000000)))
-    {
-      Serial.print("fail");
-      delay(10);
-      if(tries >= SD_NUM_TRIES)
-        break;
-      tries++;
-    }
-
-    if(!result) {
-      Serial.print("Card Mount Failed after ");
-      Serial.print(tries);
-      Serial.println(" tries");
-      return -1;
-    } else {
-      Serial.print("SD Card Mounted after ");
-      Serial.print(tries);
-      Serial.println(" tries");
-      return 0;
-    }
-  }
+#ifndef BUILTIN_LED
+#ifdef LED_BUILTIN
+#define BUILTIN_LED LED_BUILTIN
+#else
+#define BUILTIN_LED 13
+#endif
 #endif
 
-int initFileSystem_LITTLEFS() {
-  if (!LITTLEFS.begin())
-    return -1;
-  else
-    return 0;
-}
+#define _UDP_TX_PACKET_MAX_SIZE 1000
 
-class AnimatedGifsUsermod : public Usermod {
-  public:
-    void setup() {
-      gifMatrixBuffer = (CRGB *)malloc(sizeof(CRGB) * (gifMatrixWidth * gifMatrixHeight));
+// buffers for receiving and sending data
+char packetBuffer[_UDP_TX_PACKET_MAX_SIZE + 1]; //buffer to hold incoming packet,
+char ReplyBuffer[] = "acknowledged\r\n";        // a string to send back
 
-      decoder.setScreenClearCallback(screenClearCallback);
-      decoder.setUpdateScreenCallback(updateScreenCallback);
-      decoder.setDrawPixelCallback(drawPixelCallback);
+class OSC_Usermod : public Usermod
+{
+public:
+  void setup()
+  {
+  }
 
-      decoder.setFileSeekCallback(fileSeekCallback);
-      decoder.setFilePositionCallback(filePositionCallback);
-      decoder.setFileReadCallback(fileReadCallback);
-      decoder.setFileReadBlockCallback(fileReadBlockCallback);
-      decoder.setFileSizeCallback(fileSizeCallback);
+  void loop()
+  {
 
-      Serial.println("AnimatedGIFs Usermod:");
+    if (WLED_CONNECTED)
+    {
 
-      for(int i=0; i<num_files_Memory; i++) {
-        Serial.print(i);
-        Serial.print(" - Memory:");
-        if(i < sizeof(gifsNameList) && gifsNameList[i] && strlen(gifsNameList[i])) {
-          Serial.println(gifsNameList[i]);
-        } else {
-          Serial.print("gifsList[");
-          Serial.print(i);
-          Serial.println("]");
-        }
-      }
+      listen_osc_receive();
 
-      if(initFileSystem_LITTLEFS() < 0) {
-        Serial.println("No LITTLEFS");
-        useLittleFS = false;
-      } else {
-        // Determine how many animated GIF files exist in LittleFS
-        num_files_LittleFS = enumerateGIFFiles(LITTLEFS, GIF_DIRECTORY_LITTLEFS, true, "LittleFS", num_files_Memory);      
-      }
+      // #ifndef DISABLE_OSC_COMMON
+      //       OSC_Data new_osc_data;
 
-      if(useLittleFS && num_files_LittleFS < 0) {
-        Serial.println("No LittleFS gifs directory");
-        useLittleFS = false;
-        num_files_LittleFS = 0;
-      }
-
-      if(useLittleFS && !num_files_LittleFS) {
-        Serial.println("Empty LittleFS gifs directory");
-        useLittleFS = false;
-      }    
-
-      #ifdef AGIFS_USE_SD
-        if(initFileSystem_SD() < 0) {
-          Serial.println("No SD card");
-          useSD = false;
-        } else {
-          // Determine how many animated GIF files exist in SD card
-          num_files_SD = enumerateGIFFiles(SD, GIF_DIRECTORY_SD, true, "SD", num_files_Memory + num_files_LittleFS);      
-        }
-
-        if(useSD && num_files_SD < 0) {
-          Serial.println("No SD gifs directory");
-          useSD = false;
-          num_files_SD = 0;
-        }
-
-        if(useSD && !num_files_SD) {
-          Serial.println("Empty SD gifs directory");
-        }
-      #endif
-
-      #ifdef AGIFS_USE_SD
-        Serial.print("useSD: ");
-        Serial.println(useSD);
-        Serial.print("num_files_SD: ");
-        Serial.println(num_files_SD);
-      #endif
-
-      Serial.print("useLittleFS: ");
-      Serial.println(useLittleFS);
-      Serial.print("num_files_LittleFS: ");
-      Serial.println(num_files_LittleFS);
-
-      Serial.print("num_files_Memory: ");
-      Serial.println(num_files_Memory);
-
-      if(!num_files_SD && !num_files_LittleFS && !num_files_Memory) {
-        Serial.println("No GIFs to play");
-      }
+      //       set_animation_parameters(new_osc_data, osc_data);
+      // #endif // DISABLE_OSC_COMMON
     }
+  }
+  void connected()
+  {
+    Serial.print("Connected! IP address: ");
+    Serial.println(WiFi.localIP());
+    Serial.printf("UDP server on port %d\n", localPort);
+    Udp.begin(localPort);
+  }
 
-    void loop() {
-      if(!configExists) {
-        Serial.println("Agifs: Need to save config");
-        configExists = true;
-        serializeConfig();
-      }
+  /**
+   * Receive osc traffic
+   * */
+  void listen_osc_receive()
+  {
 
-      // these variables keep track of when it's time to play a new GIF
-      static unsigned long displayStartTime_millis;
+    // if there's data available, read a packet
+    int packetSize = Udp.parsePacket();
+
+    // If there is data
+    if (packetSize > 0)
+    {
       
-      // these variables keep track of when we're done displaying the last frame and are ready for a new frame
-      static uint32_t lastFrameDisplayTime = 0;
-      static unsigned int currentFrameDelay = 0;
-
-      unsigned long now = millis();
-
-      // just return here if there's no GIFs to play
-      if(!num_files_SD && !num_files_LittleFS && !num_files_Memory)
-        return;
-
-      // default behavior is to play the gif for displayTimeSeconds or for numFullCycles, whichever comes first
-      if((playMode == playModeFirst) && ((now - displayStartTime_millis) > (displayTimeSeconds * 1000) || decoder.getCycleNumber() > numFullCycles)) {
-        playNextGif = true;
-
-      }
-      // alt behavior is to play the gif until both displayTimeSeconds and numFullCycles have passed
-      else if((playMode == playModeBoth) && ((now - displayStartTime_millis) > (displayTimeSeconds * 1000) && decoder.getCycleNumber() > numFullCycles)) {
-        playNextGif = true;  
+      // Read in data to the OSCMessage parser
+      OSCMessage msg;
+      uint32_t udp_timeout_millis = millis();
+      while (packetSize--)
+      {
+        #ifdef DEBUG_USERMOD_OSC
+          DEBUG_PRINTF("packetSize=%d\n\r",packetSize);
+        #endif // DEBUG_USERMOD_OSC
+        msg.fill(Udp.read());
+        if(abs(millis()-udp_timeout_millis)>1000){ return; }
       }
 
-      // We only decode a GIF frame if the previous frame delay is over
-      if((millis() - lastFrameDisplayTime) > currentFrameDelay) {
-        if(playNextGif)
+      // If message is valid, parse it
+      if (!msg.hasError())
+      {
+        parse_oscmessage_commands(&msg);
+      }
+      else
+      {
+        #ifdef DEBUG_USERMOD_OSC
+          DEBUG_PRINTLN("msg.hasError()");
+        #endif // DEBUG_USERMOD_OSC
+      }
+    }
+  }
+
+
+  void parse_oscmessage_commands(OSCMessage* msg){
+
+    Serial.println("msg WORKING2");
+
+    Serial.printf("size=%d\n\r", msg->size());
+    // Serial.printf("getDataLength=%d\n\r",msg.getDataLength());
+    // Serial.printf("getInt0=%d\n\r",msg.getInt(0));
+    // Serial.printf("getInt1=%d\n\r",msg.getInt(1));
+    
+    OSC_Member member1 = {"hello", 12.34};
+
+    // osc_data.data.push_back(member1);
+
+
+    for (int index = 0; index < msg->size(); index++)
+    {
+
+      // Name
+
+      // Value
+      if (msg->isFloat(index))
+      {
+        Serial.println(msg->getFloat(index), 10);
+      }
+      else
+      {
+        Serial.println("NOT a float");
+      }
+    }
+
+    char buffer[300];
+    memset(&buffer, 0, sizeof(buffer));
+
+    msg->getAddress(buffer); //,0,msg.getDataLength(0));
+
+    Serial.println(buffer);
+
+    // Serial.printf("getInt=%d\n\r",msg.getInt());
+
+    // msg.dispatch("/led", led);
+
+  }
+
+  /**
+   * For debugging, display all incoming USP Packets on serial0
+   * */
+  void splash_udp_packet_serial()
+  {
+
+    int packetSize = Udp.parsePacket();
+
+    if (packetSize)
+    {
+
+      // Serial.printf("Received packet of size %d from %s:%d\n    (to %s:%d, free heap = %d B)\n",
+      //               packetSize,
+      //               Udp.remoteIP().toString().c_str(), Udp.remotePort(),
+      //               Udp.destinationIP().toString().c_str(), Udp.localPort(),
+      //               ESP.getFreeHeap());
+
+      // read the packet into packetBufffer
+      int n = Udp.read(packetBuffer, _UDP_TX_PACKET_MAX_SIZE);
+      packetBuffer[n] = 0;
+      //  Serial.printf("Contents:\"%s\"\n\r",packetBuffer);
+
+      Serial.printf("Contents:\"");
+      for (int i = 0; i < n; i++)
+      {
+        Serial.printf("%d|%c|%d\n\r", i, packetBuffer[i], (uint8_t)packetBuffer[i]);
+      }
+      Serial.println();
+
+      //  Serial.println(packetBuffer);
+
+      // send a reply, to the IP address and port that sent us the packet we received
+      // Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+      // Udp.write(ReplyBuffer);
+      // Udp.endPacket();
+    } //END splash_udp_packet_serial
+
+  } // END loop
+
+private:
+  //Private class members. You can declare variables and functions only accessible to your usermod here
+
+    void set_osc_data(OSC_Data new_data, OSC_Data& old_data)
+    {
+      for(auto& new_member : new_data.data)
+      {
+        bool found = false;
+        Serial.println("new_data.data");
+
+        for(auto& old_member : old_data.data)
         {
-          bool fileOpened = false;
-
-          if (gifIndex < num_files_Memory) {
-            fileOpened = true;
-          }
-
-          if (((gifIndex >= num_files_Memory) && (gifIndex < (num_files_Memory + num_files_LittleFS))) &&
-            openGifFilenameByIndex(LITTLEFS, GIF_DIRECTORY_LITTLEFS, (gifIndex - num_files_Memory), true, "LittleFS") >= 0) {
-            fileOpened = true;
-          }
-
-          #ifdef AGIFS_USE_SD
-            if (((gifIndex >= num_files_Memory + num_files_LittleFS) && (gifIndex < (num_files_Memory + num_files_LittleFS + num_files_SD))) &&
-              openGifFilenameByIndex(SD, GIF_DIRECTORY_SD, (gifIndex - num_files_Memory - num_files_LittleFS), true, "SD") >= 0) {
-              fileOpened = true;
-            }
-          #endif
-
-          if(fileOpened) {
-            int result;
-
-            // try to start decoding GIF.  If there's any error, conditions are set up to increment gifIndex and try again on the next loop()
-            if (gifIndex < num_files_Memory) {
-              Serial.print("Pathname: Memory:");
-              // If there's a file name to print, print it
-              if(gifIndex < sizeof(gifsNameList) && gifsNameList[gifIndex] && strlen(gifsNameList[gifIndex])) {
-                Serial.println(gifsNameList[gifIndex]);
-              } else {
-                Serial.print("gifsList[");
-                Serial.print(gifIndex);
-                Serial.println("]");
-              }
-              result = decoder.startDecoding((uint8_t *)gifsList[gifIndex], gifsSizeList[gifIndex]);
-            } else {
-              Serial.print("startDecoding:");
-              Serial.println(gifIndex);
-              result = decoder.startDecoding();
-            }
-
-            if (result >= 0) {
-              // good result, clear playNextGif so we know to decode a frame, and don't load a new GIF on the next pass
-              playNextGif = false;
-
-              // Calculate time in the future to terminate animation
-              displayStartTime_millis = now;          
-            }
-          }
-
-          // get the gifIndex for the next pass through
-          if (++gifIndex >= (num_files_SD + num_files_LittleFS + num_files_Memory)) {
-            gifIndex = 0;
+        Serial.println("auto& old_member : old_data.data");
+          if(old_member.name == new_member.name)
+          {
+        Serial.println("old_member.name == new_member.name");
+            old_member.value = new_member.value;
+            found = true;
           }
         }
 
-        if(!playNextGif) {
-          // decode frame, false == don't delay after decode
-          int result = decoder.decodeFrame(false);
-
-          lastFrameDisplayTime = now;
-          currentFrameDelay = decoder.getFrameDelay_ms();
-
-          // it's time to start decoding a new GIF if there was an error, without any delay
-          if(result < 0) {
-            playNextGif = true;
-            currentFrameDelay = 0;
-          }
+        if(found == false)
+        {
+          // old_data.data.push_back(new_data.data);
+        Serial.println("old_data.data.push_back(new_data.data)");
+        // Serial.println(new_data.data);
         }
       }
-    }
+    };
 
-    void addToConfig(JsonObject& root)
+    void update_osc_data(OSC_Data& data)
     {
-      JsonObject top = root.createNestedObject("agif");
-      top["vsW"] = gifMatrixWidth;
-      top["vsH"] = gifMatrixHeight;
-      top["dtSec"] = displayTimeSeconds;
-      top["numCyc"] = numFullCycles;
-      top["playMode"] = playMode;
-      top["sdClk"] = agifSdPinClk;
-      top["sdMiso"] = agifSdPinMiso;
-      top["sdMosi"] = agifSdPinMosi;
-      top["sdCs"] = agifSdPinCs;
-    }
 
-    void readFromConfig(JsonObject& root)
-    {
-      JsonObject top = root["agif"];
+    };
 
-      // If not all of the keys are present in the config, set a flag to write them later
-      configExists = root.containsKey("agif") &&
-                      top.containsKey("vsW") &&
-                      top.containsKey("vsH") &&
-                      top.containsKey("dtSec") &&
-                      top.containsKey("numCyc") &&
-                      top.containsKey("playMode") &&
-                      top.containsKey("sdClk") &&
-                      top.containsKey("sdMiso") &&
-                      top.containsKey("sdMosi") &&
-                      top.containsKey("sdCs");
-
-      gifMatrixWidth = top["vsW"] | AGIF_MATRIX_WIDTH; //The value right of the pipe "|" is the default value in case your setting was not present in cfg.json (e.g. first boot)
-      gifMatrixHeight = top["vsH"] | AGIF_MATRIX_HEIGHT;
-      displayTimeSeconds = top["dtSec"] | DISPLAY_TIME_SECONDS;
-      numFullCycles = top["numCyc"] | NUMBER_FULL_CYCLES;
-      playMode = top["playMode"] | PLAYBACK_MODE;
-      agifSdPinClk = top["sdClk"] | -1;
-      agifSdPinMiso = top["sdMiso"] | -1;
-      agifSdPinMosi = top["sdMosi"] | -1;
-      agifSdPinCs = top["sdCs"] | -1;
-    }
-
-  private:
-    //Private class members. You can declare variables and functions only accessible to your usermod here
-    unsigned long lastTime = 0;
-    bool configExists;
 };
