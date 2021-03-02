@@ -110,7 +110,8 @@ public:
       // If message is valid, parse it
       if (!msg.hasError())
       {
-        parse_oscmessage_commands(&msg);
+        parse_oscmessage_commands_1(&msg); // Test direct
+        // parse_oscmessage_commands_2(&msg); // Vectored
       }
       else
       {
@@ -121,8 +122,57 @@ public:
     }
   }
 
+  /**
+   * Test parser, search for topics then set controls
+   **/
+  void parse_oscmessage_commands_1(OSCMessage* msg){
 
-  void parse_oscmessage_commands(OSCMessage* msg){
+    Serial.println("msg WORKING2");
+
+    Serial.printf("size=%d\n\r", msg->size());
+    // Serial.printf("getDataLength=%d\n\r",msg.getDataLength());
+    // Serial.printf("getInt0=%d\n\r",msg.getInt(0));
+    // Serial.printf("getInt1=%d\n\r",msg.getInt(1));
+    
+    OSC_Member member1 = {"hello", 12.34};
+
+    // osc_data.data.push_back(member1);
+
+
+    for (int index = 0; index < msg->size(); index++)
+    {
+
+      // Name
+
+      // Value
+      if (msg->isFloat(index))
+      {
+        Serial.println(msg->getFloat(index), 10);
+      }
+      else
+      {
+        Serial.println("NOT a float");
+      }
+    }
+
+    char buffer[300];
+    memset(&buffer, 0, sizeof(buffer));
+
+    msg->getAddress(buffer); //,0,msg.getDataLength(0));
+
+    Serial.println(buffer);
+
+    // Serial.printf("getInt=%d\n\r",msg.getInt());
+
+    // msg.dispatch("/led", led);
+
+  }
+
+  
+  /**
+   * Test parser, including vectoring
+   **/
+  void parse_oscmessage_commands_2(OSCMessage* msg){
 
     Serial.println("msg WORKING2");
 
