@@ -31,12 +31,12 @@ OSC_Data osc_data;
 //  #define ENABLE_DEVFEATURE_SHOW_UDP_PACKET
 #define DISABLE_OSC_COMMON
 
-char ssid[] = "Skynet2400"; // your network SSID (name)
-char pass[] = "af4d8bc9ab"; // your network password
-
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
-const IPAddress outIp(192, 168, 1, 204); // remote IP (not needed for receive)
+#ifndef OSC_HOST_IP
+#define OSC_HOST_IP 192,168,1,1
+#endif
+const IPAddress outIp(OSC_HOST_IP); // remote IP (not needed for receive)
 const unsigned int outPort = 8000;       // remote port (not needed for receive)
 const unsigned int localPort = 7000;     // local port to listen for UDP packets (here's where we send the packets)
 
