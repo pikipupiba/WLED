@@ -3,24 +3,22 @@
 #include "Arduino.h"
 #include <vector>
 
-struct OSC_Member
-{
-    String name;
-    float data;
-    float value;
-};
+// struct OSC_Member
+// {
+//     std::vector<String> route;
+//     float value;
+// };
 
-struct OSC_Data
-{
-    std::vector<OSC_Member> data;
-    std::vector<OSC_Member> value; //assumed you meant this
+// struct OSC_Data
+// {
+//     // std::vector<OSC_Member> data;
+//     float hue;
+//     float hue_speed;
+// };
 
+// extern OSC_Data osc_data;
 
-};
-
-
-
-extern OSC_Data osc_data;
+// OSC_Data osc_data;
 
 // OSC_Member member = {"name", 0.0};
 
