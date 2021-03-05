@@ -608,7 +608,7 @@ void OSCMessage::decodeData(uint8_t incomingByte){
         if (datum->error == INVALID_OSC){
             //set the contents of datum with the data received
             
-    Serial.printf("\t\t\t\t datum->type=%d\n\r",datum->type);
+    // Serial.printf("\t\t\t\t datum->type=%d\n\r",datum->type);
 
             switch (datum->type){
                 case 'i':
