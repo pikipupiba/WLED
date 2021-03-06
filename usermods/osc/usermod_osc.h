@@ -17,17 +17,38 @@
 #define DEBUG_PRINT_COMMANDS
 
 /**
+ * Naming convention for app elements (so #defines below can easily have numbers/labels appended to themm. Makes UI harder, but code is easier)
+ * 
+ * Multifaders: 
+ *    - slider "<GroupName_Slider1_Slider2_Slider3"                // convoluted, but since the multifader name will never allow a split from the slider name, we may aswell have (as sub _ named) all the sliders values.. we can change this later,  but just as a basic example
+ *    - RHS value "<GroupName_Slider1_Slider2_Slider3-Label_Value" // if the value should be shown as feedback
+ *    - LHS value "<GroupName_Slider1_Slider2_Slider3-Label_Text"  // optional we want to edit the name for any reason, but best to have a unique naming convention
+ * 
+ * Encoders:
+ *    - same as multifaders, no label_value
+ * 
+ * */
+
+/**
  * LEDJ Tab
  * */
 #define D_OSC_ADDRESS_MULTIFADER_HUE_GROUP_NAME   "/ledj/HueSpeed_HueOffset#"
 #define D_OSC_ADDRESS_MULTIFADER_HUE_SPEED        D_OSC_ADDRESS_MULTIFADER_HUE_GROUP_NAME "/1"
+#define D_OSC_ADDRESS_MULTIFADER_HUE_SPEED_LABEL       D_OSC_ADDRESS_MULTIFADER_HUE_SPEED "_Label"
 #define D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET       D_OSC_ADDRESS_MULTIFADER_HUE_GROUP_NAME "/2"
+#define D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET_LABEL       D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET "_Label"
 
 #define D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME  "/ledj/StrobeSpeed_StrobeDuty_StrobeFade_StrobeOffset#"
 #define D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED       D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/1"
+#define D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED_LABEL       D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED "_Label"
 #define D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY        D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/2"
+#define D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY_LABEL        D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY "_Label"
 #define D_OSC_ADDRESS_MULTIFADER_STROBE_FADE        D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/3"
+#define D_OSC_ADDRESS_MULTIFADER_STROBE_FADE_LABEL        D_OSC_ADDRESS_MULTIFADER_STROBE_FADE "_Label"
 #define D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET      D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/4"
+#define D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET_LABEL      D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET "_Label"
+
+#define D_OSC_ADDRESS_ENCODER_BEAT_OFFSET          "/ledj/BeatOffset"
 
 
 
@@ -40,6 +61,9 @@ struct OSC_Data
   float strobe_duty;
   float strobe_fade;
   float strobe_offset;
+
+  
+  float beat_offset = 0;
 
   void print(void)
   {
@@ -62,9 +86,9 @@ OSC_Data osc_data;
 
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
-#ifndef OSC_HOST_IP
-#define OSC_HOST_IP 192, 168, 1, 1
-#endif
+// #ifndef OSC_HOST_IP
+// #define OSC_HOST_IP 192, 168, 1, 1
+// #endif
 const IPAddress outIp(OSC_HOST_IP);  // remote IP (not needed for receive)
 const unsigned int outPort = 8000;   // remote port (not needed for receive)
 const unsigned int localPort = 7000; // local port to listen for UDP packets (here's where we send the packets)
@@ -94,41 +118,83 @@ public:
   {
     
   }
+  
+  template <typename T>
+  void send_single_message(char* address, T value){
+
+    OSCMessage msg(address);
+    msg.add(value);
+    Udp.beginPacket(outIp, outPort);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+
+  }
+
+
+  /**
+   * Function will internally check if teleperiod is met, or if a flag is set to force update
+   * */
+  void update_remote_parameters(){
+    
+    if (abs(millis() -  tSaved_update_remote_parameters) > 1000)
+    {
+      tSaved_update_remote_parameters = millis();
+
+      send_single_message(D_OSC_ADDRESS_MULTIFADER_HUE_SPEED_LABEL, osc_data.hue);
+      send_single_message(D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET_LABEL, osc_data.hue_speed);
+
+      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED_LABEL, osc_data.strobe_speed);
+      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY_LABEL, osc_data.strobe_duty);
+      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_FADE_LABEL, osc_data.strobe_fade);
+      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET_LABEL, osc_data.strobe_offset);
+
+    }
+
+  }
 
   void loop()
   {
 
-    if (abs(millis() -  tTest) > 1000)
+    update_remote_parameters();
+
+    if (abs(millis() -  tTest) > 100)
     {
       tTest = millis();
 
       // test_send_osc_message();
 
       
-      if(osc_data.hue++>255){osc_data.hue = 0;}
+      if(osc_data.hue_speed++>255){osc_data.hue_speed = 0;}
+
+      // if(osc_data.beat_offset>1.0f){
+      //   osc_data.beat_offset = 0;
+      // }else{
+      //   osc_data.beat_offset += 0.05;
+      // }
 
 
 
-       OSCMessage msg("/ledj/label_HueSpeed");
-        msg.add(osc_data.hue_speed);
-        Udp.beginPacket(outIp, outPort);
-        msg.send(Udp);
-        Udp.endPacket();
-        msg.empty();
+      //  OSCMessage msg("/ledj/label_HueSpeed");
+      //   msg.add(osc_data.beat_offset);
+      //   Udp.beginPacket(outIp, outPort);
+      //   msg.send(Udp);
+      //   Udp.endPacket();
+      //   msg.empty();
 
-       OSCMessage msg2("/ledj/HueValue");
-        msg2.add(osc_data.hue_speed);
-        Udp.beginPacket(outIp, outPort);
-        msg2.send(Udp);
-        Udp.endPacket();
-        msg2.empty();
+      //  OSCMessage msg2("/ledj/HueValue");
+      //   msg2.add(osc_data.beat_offset);
+      //   Udp.beginPacket(outIp, outPort);
+      //   msg2.send(Udp);
+      //   Udp.endPacket();
+      //   msg2.empty();
 
-       OSCMessage msg3("/ledj/SaturationValue");
-        msg3.add(osc_data.hue_speed);
-        Udp.beginPacket(outIp, outPort);
-        msg3.send(Udp);
-        Udp.endPacket();
-        msg3.empty();
+      //  OSCMessage msg3("/ledj/BeatOffset");
+      //   msg3.add(osc_data.beat_offset);
+      //   Udp.beginPacket(outIp, outPort);
+      //   msg3.send(Udp);
+      //   Udp.endPacket();
+      //   msg3.empty();
 
 
     }
@@ -181,6 +247,8 @@ public:
         message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY,      cb_command_set_strobe_duty);
         message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_FADE,      cb_command_set_strobe_fade);
         message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET,    cb_command_set_strobe_offset);
+
+        message.dispatch(D_OSC_ADDRESS_ENCODER_BEAT_OFFSET,    cb_command_set_beat_offset);
       }
       else
       {
@@ -204,6 +272,7 @@ private :
   void test_send_osc_message(void);
 
   uint32_t tTest = millis();
+  uint32_t tSaved_update_remote_parameters = millis();
 
   static void cb_command_set_hue_speed(OSCMessage &msg) {
     osc_data.hue = msg.getFloat(0);
@@ -244,6 +313,13 @@ private :
     osc_data.strobe_offset = msg.getFloat(0);
     #ifdef DEBUG_PRINT_COMMANDS
     Serial.printf("strobe_offset=%f\n\r",osc_data.strobe_offset);
+    #endif
+  }
+
+  static void cb_command_set_beat_offset(OSCMessage &msg) {
+    osc_data.beat_offset = msg.getFloat(0);
+    #ifdef DEBUG_PRINT_COMMANDS
+    Serial.printf("beat_offset=%f\n\r",osc_data.beat_offset);
     #endif
   }
 
