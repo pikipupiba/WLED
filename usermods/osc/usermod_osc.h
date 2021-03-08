@@ -62,6 +62,7 @@ struct OSC_Data
   // std::vector<OSC_Member> data;
   float hue;
   float hue_speed;
+  float hue_offset;
   float strobe_speed;
   float strobe_duty;
   float strobe_fade;
@@ -74,6 +75,11 @@ struct OSC_Data
   {
     Serial.printf("Hue: %f\n\r", hue);
     Serial.printf("Hue Speed: %f\n\r", hue_speed);
+    Serial.printf("Hue Offset: %f\n\r", hue_offset);
+    Serial.printf("Strobe Speed: %f\n\r", strobe_speed);
+    Serial.printf("Strobe Duty: %f\n\r", strobe_duty);
+    Serial.printf("Strobe Fade: %f\n\r", strobe_fade);
+    Serial.printf("Strobe Offset: %f\n\r", strobe_offset);
   }
 };
 
@@ -91,9 +97,9 @@ OSC_Data osc_data;
 
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
-// #ifndef OSC_HOST_IP
-// #define OSC_HOST_IP 192, 168, 1, 1
-// #endif
+#ifndef OSC_HOST_IP
+#define OSC_HOST_IP 192, 168, 1, 115
+#endif
 const IPAddress outIp(OSC_HOST_IP);  // remote IP (not needed for receive)
 const unsigned int outPort = 8000;   // remote port (not needed for receive)
 const unsigned int localPort = 7000; // local port to listen for UDP packets (here's where we send the packets)
@@ -243,6 +249,9 @@ public:
         message.getAddress(buffer, 0, 100);
         Serial.printf("osc_address=\"%s\"\n\r",buffer);
 
+        // Hue Wheel
+        message.dispatch(D_OSC_ADDRESS_HUE,  cb_command_set_hue);
+
         // Hue Multifaders
         message.dispatch(D_OSC_ADDRESS_MF_HUE_SPEED,  cb_command_set_hue_speed);
         message.dispatch(D_OSC_ADDRESS_MF_HUE_OFFSET, cb_command_set_hue_offset);
@@ -279,17 +288,24 @@ private :
   uint32_t tTest = millis();
   uint32_t tSaved_update_remote_parameters = millis();
 
-  static void cb_command_set_hue_speed(OSCMessage &msg) {
+  static void cb_command_set_hue(OSCMessage &msg) {
     osc_data.hue = msg.getFloat(0);
     #ifdef DEBUG_PRINT_COMMANDS
     Serial.printf("hue=%f\n\r",osc_data.hue);
     #endif
   }
 
-  static void cb_command_set_hue_offset(OSCMessage &msg) {
+  static void cb_command_set_hue_speed(OSCMessage &msg) {
     osc_data.hue_speed = msg.getFloat(0);
     #ifdef DEBUG_PRINT_COMMANDS
     Serial.printf("hue_speed=%f\n\r",osc_data.hue_speed);
+    #endif
+  }
+
+  static void cb_command_set_hue_offset(OSCMessage &msg) {
+    osc_data.hue_offset = msg.getFloat(0);
+    #ifdef DEBUG_PRINT_COMMANDS
+    Serial.printf("hue_offset=%f\n\r",osc_data.hue_offset);
     #endif
   }
 
