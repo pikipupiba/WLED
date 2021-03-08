@@ -32,21 +32,26 @@
 /**
  * LEDJ Tab
  * */
-#define D_OSC_ADDRESS_MULTIFADER_HUE_GROUP_NAME   "/ledj/HueSpeed_HueOffset#"
-#define D_OSC_ADDRESS_MULTIFADER_HUE_SPEED        D_OSC_ADDRESS_MULTIFADER_HUE_GROUP_NAME "/1"
-#define D_OSC_ADDRESS_MULTIFADER_HUE_SPEED_LABEL       D_OSC_ADDRESS_MULTIFADER_HUE_SPEED "_Label"
-#define D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET       D_OSC_ADDRESS_MULTIFADER_HUE_GROUP_NAME "/2"
-#define D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET_LABEL       D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET "_Label"
+#define D_OSC_ADDRESS_MF_HUE_GROUP   "/ledj/mf_hue_1"
+#define D_OSC_ADDRESS_MF_HUE_SPEED               D_OSC_ADDRESS_MF_HUE_GROUP_NAME "/1"         //  "/ledj/mf_hue_1/1"
+#define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_TEXT    D_OSC_ADDRESS_MF_HUE_SPEED   "-label_text"   //  "/ledj/mf_hue_1/1-label_text"
+#define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE   D_OSC_ADDRESS_MF_HUE_SPEED "-label_value"    //  "/ledj/mf_hue_1/1-label_value"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET              D_OSC_ADDRESS_MF_HUE_GROUP_NAME "/2"         //  "/ledj/mf_hue_1/1"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_TEXT   D_OSC_ADDRESS_MF_HUE_OFFSET   "-label_text"  //  "/ledj/mf_hue_1/1-label_text"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE  D_OSC_ADDRESS_MF_HUE_OFFSET "-label_value"   //  "/ledj/mf_hue_1/1-label_value"
 
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME  "/ledj/StrobeSpeed_StrobeDuty_StrobeFade_StrobeOffset#"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED       D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/1"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED_LABEL       D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED "_Label"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY        D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/2"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY_LABEL        D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY "_Label"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_FADE        D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/3"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_FADE_LABEL        D_OSC_ADDRESS_MULTIFADER_STROBE_FADE "_Label"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET      D_OSC_ADDRESS_MULTIFADER_STROBE_GROUP_NAME "/4"
-#define D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET_LABEL      D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET "_Label"
+
+#define D_OSC_ADDRESS_MF_STROBE_GROUP  "/ledj/mf_strobe_1"
+#define D_OSC_ADDRESS_MF_STROBE_SPEED              D_OSC_ADDRESS_MF_STROBE_GROUP "/1"        
+#define D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE  D_OSC_ADDRESS_MF_STROBE_SPEED "-label_value" 
+#define D_OSC_ADDRESS_MF_STROBE_DUTY               D_OSC_ADDRESS_MF_STROBE_GROUP "/2"      
+#define D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE   D_OSC_ADDRESS_MF_STROBE_DUTY "-label_value"
+#define D_OSC_ADDRESS_MF_STROBE_FADE               D_OSC_ADDRESS_MF_STROBE_GROUP "/3"     
+#define D_OSC_ADDRESS_MF_STROBE_FADE_LABEL_VALUE   D_OSC_ADDRESS_MF_STROBE_FADE "-label_value" 
+#define D_OSC_ADDRESS_MF_STROBE_OFFSET             D_OSC_ADDRESS_MF_STROBE_GROUP "/4"         
+#define D_OSC_ADDRESS_MF_STROBE_OFFSET_LABEL_VALUE D_OSC_ADDRESS_MF_STROBE_OFFSET "-label_value"   
+
+
 
 #define D_OSC_ADDRESS_ENCODER_BEAT_OFFSET          "/ledj/BeatOffset"
 
@@ -141,13 +146,13 @@ public:
     {
       tSaved_update_remote_parameters = millis();
 
-      send_single_message(D_OSC_ADDRESS_MULTIFADER_HUE_SPEED_LABEL, osc_data.hue);
-      send_single_message(D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET_LABEL, osc_data.hue_speed);
+      send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE, osc_data.hue);
+      send_single_message(D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE, osc_data.hue_speed);
 
-      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED_LABEL, osc_data.strobe_speed);
-      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY_LABEL, osc_data.strobe_duty);
-      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_FADE_LABEL, osc_data.strobe_fade);
-      send_single_message(D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET_LABEL, osc_data.strobe_offset);
+      send_single_message(D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE, osc_data.strobe_speed);
+      send_single_message(D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE, osc_data.strobe_duty);
+      send_single_message(D_OSC_ADDRESS_MF_STROBE_FADE_LABEL_VALUE, osc_data.strobe_fade);
+      send_single_message(D_OSC_ADDRESS_MF_STROBE_OFFSET_LABEL_VALUE, osc_data.strobe_offset);
 
     }
 
@@ -239,14 +244,14 @@ public:
         Serial.printf("osc_address=\"%s\"\n\r",buffer);
 
         // Hue Multifaders
-        message.dispatch(D_OSC_ADDRESS_MULTIFADER_HUE_SPEED,  cb_command_set_hue_speed);
-        message.dispatch(D_OSC_ADDRESS_MULTIFADER_HUE_OFFSET, cb_command_set_hue_offset);
+        message.dispatch(D_OSC_ADDRESS_MF_HUE_SPEED,  cb_command_set_hue_speed);
+        message.dispatch(D_OSC_ADDRESS_MF_HUE_OFFSET, cb_command_set_hue_offset);
 
         // Strobe Multifaders
-        message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_SPEED,     cb_command_set_strobe_speed);
-        message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_DUTY,      cb_command_set_strobe_duty);
-        message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_FADE,      cb_command_set_strobe_fade);
-        message.dispatch(D_OSC_ADDRESS_MULTIFADER_STROBE_OFFSET,    cb_command_set_strobe_offset);
+        message.dispatch(D_OSC_ADDRESS_MF_STROBE_SPEED,     cb_command_set_strobe_speed);
+        message.dispatch(D_OSC_ADDRESS_MF_STROBE_DUTY,      cb_command_set_strobe_duty);
+        message.dispatch(D_OSC_ADDRESS_MF_STROBE_FADE,      cb_command_set_strobe_fade);
+        message.dispatch(D_OSC_ADDRESS_MF_STROBE_OFFSET,    cb_command_set_strobe_offset);
 
         message.dispatch(D_OSC_ADDRESS_ENCODER_BEAT_OFFSET,    cb_command_set_beat_offset);
       }
