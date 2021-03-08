@@ -73,7 +73,6 @@
 
 #include "src/dependencies/network/Network.h"
 
-#define WLED_USE_MY_CONFIG
 #ifdef WLED_USE_MY_CONFIG
   #include "my_config.h"
   #include "my_config_local.h"
