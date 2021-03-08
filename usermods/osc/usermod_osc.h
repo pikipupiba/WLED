@@ -32,13 +32,15 @@
 /**
  * LEDJ Tab
  * */
+#define D_OSC_ADDRESS_HUE "/ledj/enc_hue"
+
 #define D_OSC_ADDRESS_MF_HUE_GROUP   "/ledj/mf_hue_1"
-#define D_OSC_ADDRESS_MF_HUE_SPEED               D_OSC_ADDRESS_MF_HUE_GROUP_NAME "/1"         //  "/ledj/mf_hue_1/1"
-#define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_TEXT    D_OSC_ADDRESS_MF_HUE_SPEED   "-label_text"   //  "/ledj/mf_hue_1/1-label_text"
+#define D_OSC_ADDRESS_MF_HUE_SPEED               D_OSC_ADDRESS_MF_HUE_GROUP "/1"         //  "/ledj/mf_hue_1/1"
+#define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_TEXT    D_OSC_ADDRESS_MF_HUE_SPEED "-label_text"   //  "/ledj/mf_hue_1/1-label_text"
 #define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE   D_OSC_ADDRESS_MF_HUE_SPEED "-label_value"    //  "/ledj/mf_hue_1/1-label_value"
-#define D_OSC_ADDRESS_MF_HUE_OFFSET              D_OSC_ADDRESS_MF_HUE_GROUP_NAME "/2"         //  "/ledj/mf_hue_1/1"
-#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_TEXT   D_OSC_ADDRESS_MF_HUE_OFFSET   "-label_text"  //  "/ledj/mf_hue_1/1-label_text"
-#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE  D_OSC_ADDRESS_MF_HUE_OFFSET "-label_value"   //  "/ledj/mf_hue_1/1-label_value"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET              D_OSC_ADDRESS_MF_HUE_GROUP "/2"         //  "/ledj/mf_hue_1/2"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_TEXT   D_OSC_ADDRESS_MF_HUE_OFFSET   "-label_text"  //  "/ledj/mf_hue_1/2-label_text"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE  D_OSC_ADDRESS_MF_HUE_OFFSET "-label_value"   //  "/ledj/mf_hue_1/2-label_value"
 
 
 #define D_OSC_ADDRESS_MF_STROBE_GROUP  "/ledj/mf_strobe_1"
@@ -148,12 +150,13 @@ public:
    * */
   void update_remote_parameters(){
     
-    if (abs(millis() -  tSaved_update_remote_parameters) > 1000)
+    if (abs(millis() -  tSaved_update_remote_parameters) > 100)
     {
       tSaved_update_remote_parameters = millis();
 
-      send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE, osc_data.hue);
-      send_single_message(D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE, osc_data.hue_speed);
+      send_single_message(D_OSC_ADDRESS_HUE, osc_data.hue);
+      send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE, osc_data.hue_speed);
+      send_single_message(D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE, osc_data.hue_offset);
 
       send_single_message(D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE, osc_data.strobe_speed);
       send_single_message(D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE, osc_data.strobe_duty);
