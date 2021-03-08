@@ -2,7 +2,9 @@
 
 #include "wled.h"
 
-// #include "osc_common.h"
+#include "osc_common.h"
+
+OSC_Data osc_data;
 
 #include <Arduino.h>
 
@@ -56,36 +58,6 @@
 
 
 #define D_OSC_ADDRESS_ENCODER_BEAT_OFFSET          "/ledj/BeatOffset"
-
-
-
-struct OSC_Data
-{
-  // std::vector<OSC_Member> data;
-  float hue;
-  float hue_speed;
-  float hue_offset;
-  float strobe_speed;
-  float strobe_duty;
-  float strobe_fade;
-  float strobe_offset;
-
-  
-  float beat_offset = 0;
-
-  void print(void)
-  {
-    Serial.printf("Hue: %f\n\r", hue);
-    Serial.printf("Hue Speed: %f\n\r", hue_speed);
-    Serial.printf("Hue Offset: %f\n\r", hue_offset);
-    Serial.printf("Strobe Speed: %f\n\r", strobe_speed);
-    Serial.printf("Strobe Duty: %f\n\r", strobe_duty);
-    Serial.printf("Strobe Fade: %f\n\r", strobe_fade);
-    Serial.printf("Strobe Offset: %f\n\r", strobe_offset);
-  }
-};
-
-OSC_Data osc_data;
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
@@ -156,21 +128,14 @@ public:
     {
       tSaved_update_remote_parameters = millis();
       
-      
-    // OSCMessage msg("/ledj/label_hue_speed");
-    // msg.add(12.35);
-    // Udp.beginPacket(outIp, outPort);
-    // msg.send(Udp);
-    // Udp.endPacket();
-    // msg.empty();
+    
+      // send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED, osc_data.hue_speed);
       
 
       send_single_message(D_OSC_ADDRESS_HUE, osc_data.hue);
       send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE, osc_data.hue_speed);
       send_single_message(D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE, osc_data.hue_offset);
-
       
-      send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED, osc_data.hue_speed);
 
       send_single_message(D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE, osc_data.strobe_speed);
       send_single_message(D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE, osc_data.strobe_duty);
@@ -192,38 +157,7 @@ public:
 
       // test_send_osc_message();
 
-      
-      if(osc_data.hue_speed++>255){osc_data.hue_speed = 0;}
-
-      // if(osc_data.beat_offset>1.0f){
-      //   osc_data.beat_offset = 0;
-      // }else{
-      //   osc_data.beat_offset += 0.05;
-      // }
-
-
-
-      //  OSCMessage msg("/ledj/label_HueSpeed");
-      //   msg.add(osc_data.beat_offset);
-      //   Udp.beginPacket(outIp, outPort);
-      //   msg.send(Udp);
-      //   Udp.endPacket();
-      //   msg.empty();
-
-      //  OSCMessage msg2("/ledj/HueValue");
-      //   msg2.add(osc_data.beat_offset);
-      //   Udp.beginPacket(outIp, outPort);
-      //   msg2.send(Udp);
-      //   Udp.endPacket();
-      //   msg2.empty();
-
-      //  OSCMessage msg3("/ledj/BeatOffset");
-      //   msg3.add(osc_data.beat_offset);
-      //   Udp.beginPacket(outIp, outPort);
-      //   msg3.send(Udp);
-      //   Udp.endPacket();
-      //   msg3.empty();
-
+      // if(osc_data.hue_speed++>128){osc_data.hue_speed = 0;}
 
     }
 

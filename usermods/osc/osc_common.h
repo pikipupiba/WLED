@@ -3,23 +3,30 @@
 #include "Arduino.h"
 #include <vector>
 
-// struct OSC_Member
-// {
-//     std::vector<String> route;
-//     float value;
-// };
+struct OSC_Data
+{
+  // std::vector<OSC_Member> data;
+  float hue;
+  float hue_speed;
+  float hue_offset;
+  float strobe_speed;
+  float strobe_duty;
+  float strobe_fade;
+  float strobe_offset;
 
-// struct OSC_Data
-// {
-//     // std::vector<OSC_Member> data;
-//     float hue;
-//     float hue_speed;
-// };
+  
+  float beat_offset = 0;
 
-// extern OSC_Data osc_data;
+  void print(void)
+  {
+    Serial.printf("Hue: %f\n\r", hue);
+    Serial.printf("Hue Speed: %f\n\r", hue_speed);
+    Serial.printf("Hue Offset: %f\n\r", hue_offset);
+    Serial.printf("Strobe Speed: %f\n\r", strobe_speed);
+    Serial.printf("Strobe Duty: %f\n\r", strobe_duty);
+    Serial.printf("Strobe Fade: %f\n\r", strobe_fade);
+    Serial.printf("Strobe Offset: %f\n\r", strobe_offset);
+  }
+};
 
-// OSC_Data osc_data;
-
-// OSC_Member member = {"name", 0.0};
-
-// osc_data.data.push_back(member);
+extern OSC_Data osc_data;
