@@ -37,21 +37,21 @@
 #define D_OSC_ADDRESS_MF_HUE_GROUP   "/ledj/mf_hue_1"
 #define D_OSC_ADDRESS_MF_HUE_SPEED               D_OSC_ADDRESS_MF_HUE_GROUP "/1"         //  "/ledj/mf_hue_1/1"
 #define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_TEXT    D_OSC_ADDRESS_MF_HUE_SPEED "-label_text"   //  "/ledj/mf_hue_1/1-label_text"
-#define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE   D_OSC_ADDRESS_MF_HUE_SPEED "-label_value"    //  "/ledj/mf_hue_1/1-label_value"
+#define D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE   "/ledj/label_hue_speed"    //  "/ledj/mf_hue_1/1-label_value"
 #define D_OSC_ADDRESS_MF_HUE_OFFSET              D_OSC_ADDRESS_MF_HUE_GROUP "/2"         //  "/ledj/mf_hue_1/2"
-#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_TEXT   D_OSC_ADDRESS_MF_HUE_OFFSET   "-label_text"  //  "/ledj/mf_hue_1/2-label_text"
-#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE  D_OSC_ADDRESS_MF_HUE_OFFSET "-label_value"   //  "/ledj/mf_hue_1/2-label_value"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_TEXT   D_OSC_ADDRESS_MF_HUE_OFFSET "-label_text"  //  "/ledj/mf_hue_1/2-label_text"
+#define D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE  "/ledj/label_hue_offset"   //  "/ledj/mf_hue_1/2-label_value"
 
 
 #define D_OSC_ADDRESS_MF_STROBE_GROUP  "/ledj/mf_strobe_1"
 #define D_OSC_ADDRESS_MF_STROBE_SPEED              D_OSC_ADDRESS_MF_STROBE_GROUP "/1"        
-#define D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE  D_OSC_ADDRESS_MF_STROBE_SPEED "-label_value" 
+#define D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE  "/ledj/label_strobe_speed" 
 #define D_OSC_ADDRESS_MF_STROBE_DUTY               D_OSC_ADDRESS_MF_STROBE_GROUP "/2"      
-#define D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE   D_OSC_ADDRESS_MF_STROBE_DUTY "-label_value"
+#define D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE   "/ledj/label_strobe_duty"
 #define D_OSC_ADDRESS_MF_STROBE_FADE               D_OSC_ADDRESS_MF_STROBE_GROUP "/3"     
-#define D_OSC_ADDRESS_MF_STROBE_FADE_LABEL_VALUE   D_OSC_ADDRESS_MF_STROBE_FADE "-label_value" 
+#define D_OSC_ADDRESS_MF_STROBE_FADE_LABEL_VALUE   "/ledj/label_strobe_fade" 
 #define D_OSC_ADDRESS_MF_STROBE_OFFSET             D_OSC_ADDRESS_MF_STROBE_GROUP "/4"         
-#define D_OSC_ADDRESS_MF_STROBE_OFFSET_LABEL_VALUE D_OSC_ADDRESS_MF_STROBE_OFFSET "-label_value"   
+#define D_OSC_ADDRESS_MF_STROBE_OFFSET_LABEL_VALUE "/ledj/label_strobe_offset"   
 
 
 
@@ -135,6 +135,8 @@ public:
   template <typename T>
   void send_single_message(char* address, T value){
 
+    // Serial.printf("address=\"%s\"\n\r",address);
+
     OSCMessage msg(address);
     msg.add(value);
     Udp.beginPacket(outIp, outPort);
@@ -153,6 +155,15 @@ public:
     if (abs(millis() -  tSaved_update_remote_parameters) > 100)
     {
       tSaved_update_remote_parameters = millis();
+      
+      
+    // OSCMessage msg("/ledj/label_hue_speed");
+    // msg.add(12.35);
+    // Udp.beginPacket(outIp, outPort);
+    // msg.send(Udp);
+    // Udp.endPacket();
+    // msg.empty();
+      
 
       send_single_message(D_OSC_ADDRESS_HUE, osc_data.hue);
       send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE, osc_data.hue_speed);
