@@ -169,6 +169,9 @@ public:
       send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED_LABEL_VALUE, osc_data.hue_speed);
       send_single_message(D_OSC_ADDRESS_MF_HUE_OFFSET_LABEL_VALUE, osc_data.hue_offset);
 
+      
+      send_single_message(D_OSC_ADDRESS_MF_HUE_SPEED, osc_data.hue_speed);
+
       send_single_message(D_OSC_ADDRESS_MF_STROBE_SPEED_LABEL_VALUE, osc_data.strobe_speed);
       send_single_message(D_OSC_ADDRESS_MF_STROBE_DUTY_LABEL_VALUE, osc_data.strobe_duty);
       send_single_message(D_OSC_ADDRESS_MF_STROBE_FADE_LABEL_VALUE, osc_data.strobe_fade);
